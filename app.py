@@ -279,9 +279,67 @@ if idx >= len(rounds):
 
     S = summarize(rounds)
     if S:
+        st.subheader("📊 Vos statistiques" if lang == "fr" else "📊 Your statistics")
         st.metric("Rounds completed" if lang == "en" else "Tours complétés", S["n_done"])
         st.metric("Mean absolute error" if lang == "en" else "Erreur absolue moyenne", f"{S['mae']:.2f}")
         st.metric("Mean pull toward anchor" if lang == "en" else "Traction moyenne vers l'ancre", f"{S['mean_signed_pull']:.2f}")
+            # ------------------ EXPLANATION OF RESULTS ------------------
+    st.divider()
+
+    if lang == "fr":
+        st.subheader("🧠 Que signifient vos résultats ?")
+        bias_strength = abs(S["mean_signed_pull"])
+        if bias_strength < 2:
+            st.success("🟢 Vous avez très peu été influencé ! Votre estimation reste proche de la réalité.")
+        elif bias_strength < 5:
+            st.warning("🟡 Vous avez été un peu influencé par le nombre affiché avant de répondre.")
+        else:
+            st.error("🔴 Votre cerveau s’est bien laissé guider par le nombre d’ancrage !")
+
+        st.markdown(
+            """
+            ### 🎯 Qu’est-ce que le biais d’ancrage ?
+            Quand on voit un **nombre avant de donner une estimation**, notre cerveau garde ce nombre comme point de départ,
+            même s’il n’a **aucun lien avec la vraie réponse**.  
+            Ce nombre devient une **ancre** : il tire nos estimations vers lui.
+
+            ### 🧩 Comment vous avez été “piégé” :
+            Dans ce jeu, chaque grille de carrés bleus a été montrée **deux fois**, avec exactement **le même nombre de carrés**.
+            Mais avant votre réponse, on vous a indiqué :  
+            > “En moyenne, 17 personnes ont répondu X.”
+
+            Ce **X** était volontairement **un peu plus haut (+15%) ou plus bas (-15%)** que la vraie valeur.
+            Cela permet d’observer comment ce petit indice modifie vos estimations.
+            """
+        )
+
+    else:
+        st.subheader("🧠 What do your results mean?")
+        bias_strength = abs(S["mean_signed_pull"])
+        if bias_strength < 2:
+            st.success("🟢 You were barely influenced! Your estimates stayed close to the truth.")
+        elif bias_strength < 5:
+            st.warning("🟡 You were a little influenced by the number shown before your answer.")
+        else:
+            st.error("🔴 Your brain was strongly pulled toward the anchor number!")
+
+        st.markdown(
+            """
+            ### 🎯 What is anchoring bias?
+            When we see a **number before giving an estimate**, our brain keeps it as a starting point,
+            even if it’s **completely unrelated** to the real answer.  
+            That number becomes an **anchor** — it pulls our guesses toward it.
+
+            ### 🧩 How we “tricked” you:
+            In this game, every grid of blue squares was shown **twice**, with **the same true number of squares**.
+            But before your answer, you saw a message like:  
+            > “On average, 17 people answered X.”
+
+            That **X** was deliberately set **a bit higher (+15%) or lower (−15%)** than the real number.
+            This shows how even a small hint can push our judgment.
+            """
+        )
+
 
     st.download_button(text["download"],
                        data=df.to_csv(index=False).encode("utf-8"),
