@@ -10,13 +10,13 @@ import pandas as pd
 st.set_page_config(page_title="Biases in Action", page_icon="🎯", layout="centered")
 
 # ------------------ CONSTANTS ------------------
-GRID_N = 10
-N_MATRICES = 15
-ROUNDS = N_MATRICES * 2
-VIEW_SECONDS = 5
-N_PEOPLE = 17
-ANCHOR_PCT = 0.15
-MIN_TRUE, MAX_TRUE = 25, 75
+GRID_N = 10 # NEVER CHANGE THAT
+N_MATRICES = 15 # CAN BE CHANGED
+ROUNDS = N_MATRICES * 2 # NEVER CHANGE THAT
+VIEW_SECONDS = 5 # CAN BE CHANGED
+N_PEOPLE = 17 # NEVER CHANGE THAT
+ANCHOR_PCT = 0.15 # NEVER CHANGE THAT
+MIN_TRUE, MAX_TRUE = 25, 75 # NEVER CHANGE THAT
 
 # ------------------ TRANSLATIONS ------------------
 T = {
