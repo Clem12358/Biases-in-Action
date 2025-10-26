@@ -1,4 +1,6 @@
 streamlit
-numpy
 pandas
+numpy
 matplotlib
+gspread
+google-auth
