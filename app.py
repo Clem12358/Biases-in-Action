@@ -15,12 +15,12 @@ st.set_page_config(page_title="Biases in Action", page_icon="🎯", layout="cent
 
 # ------------------ CONSTANTS ------------------
 GRID_N = 10                 # 10x10, DO NOT MODIFY 
-N_MATRICES = 15             # 15 distinct true values, DO NOT MODIFY UNLESS WE AGREE TOGETHER
-ROUNDS = N_MATRICES * 2     # each truth twice, DO NOT MODIFY
-VIEW_SECONDS = 5            # viewing duration, CAN BE MODIFIED
-N_PEOPLE = 17               # used in message, DO NOT MODIFY
-ANCHOR_PCT = 0.15           # ±15%, DO NOT MODIFY
-MIN_TRUE, MAX_TRUE = 25, 75 # true value bounds, DO NOT MODIFY
+N_MATRICES = 15             # Number of unique true values
+ROUNDS = N_MATRICES * 2     # Each truth twice
+VIEW_SECONDS = 5            # Seconds to show the grid
+N_PEOPLE = 17               # Used in the anchoring text
+ANCHOR_PCT = 0.15           # ±15%
+MIN_TRUE, MAX_TRUE = 25, 75 # Range of true blue squares
 
 # ------------------ DATA MODEL ------------------
 @dataclass
@@ -53,7 +53,6 @@ def make_rounds(seed: int | None = None) -> list[RoundItem]:
         grid_b = make_grid(tc)
         while np.array_equal(grid_a, grid_b):
             grid_b = make_grid(tc)
-
         low = round(tc * (1 - ANCHOR_PCT), 2)
         high = round(tc * (1 + ANCHOR_PCT), 2)
         pair = [
@@ -79,26 +78,7 @@ def summarize(rounds: list[RoundItem]):
     signed = [r.anchor_dir * (r.estimate - r.true_count) for r in done]
     mae = float(np.mean([abs(r.estimate - r.true_count) for r in done]))
     mean_signed = float(np.mean(signed))
-    by_id = {}
-    for r in done:
-        by_id.setdefault(r.matrix_id, {}).setdefault('true', r.true_count)
-        if r.anchor_dir == +1:
-            by_id[r.matrix_id]['high'] = r.estimate
-        else:
-            by_id[r.matrix_id]['low'] = r.estimate
-    pairs = []
-    for mid, d in by_id.items():
-        if 'high' in d and 'low' in d:
-            pairs.append({
-                "id_verite": mid,
-                "vrai": d["true"],
-                "est_ancre_haute": d["high"],
-                "est_ancre_basse": d["low"],
-                "delta(haute-moins-basse)": d["high"] - d["low"]
-            })
-    avg_pair_delta = float(np.mean([p["delta(haute-moins-basse)"] for p in pairs])) if pairs else float("nan")
-    return {"n_done": len(done), "mae": mae, "mean_signed_pull": mean_signed,
-            "pairs": pairs, "overall_pair_delta": avg_pair_delta}
+    return {"n_done": len(done), "mae": mae, "mean_signed_pull": mean_signed}
 
 def to_dataframe(rounds: list[RoundItem]) -> pd.DataFrame:
     now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -124,7 +104,7 @@ def save_to_gsheet(df):
     sheet = client.open_by_url(st.secrets["gsheets"]["spreadsheet"]).sheet1
     sheet.append_rows(df.values.tolist(), value_input_option="USER_ENTERED")
 
-# ------------------ TEXTS ------------------
+# ------------------ TRANSLATIONS ------------------
 T = {
     "fr": {
         "title": "🎯 Sprint Mémoire Couleurs",
@@ -162,46 +142,104 @@ T = {
     }
 }
 
-# ------------------ SESSION INIT ------------------
+# ------------------ LANGUAGE SELECTION ------------------
 if "lang" not in st.session_state:
-    st.session_state.lang = st.radio("Choose language / Choisissez la langue", ["en", "fr"])
-    st.session_state.phase = "founder_check"
-    st.stop()
+    st.title("🌍 Choose your language / Choisissez votre langue")
 
-# ------------------ FOUNDER MODE SELECTION -----------------
-if "founder_mode" not in st.session_state and st.session_state.phase == "founder_check":
-    st.title("🔐 Access Mode Selection")
-    st.subheader("Are you a founder or a participant?")
     col1, col2 = st.columns(2)
+    if "temp_lang" not in st.session_state:
+        st.session_state.temp_lang = None
 
     with col1:
-        st.markdown("**Founder access**")
-        pw = st.text_input("Enter password:", type="password")
-        if st.button("Validate"):
-            if pw == "26102025":
-                st.session_state.founder_mode = True
-                st.success("✅ Founder mode enabled — data will NOT be saved.")
-                st.session_state.phase = "intro"
-                st.rerun()
-            else:
-                st.error("❌ Incorrect password")
-
+        if st.button("🇬🇧 English"):
+            st.session_state.temp_lang = "en"
     with col2:
-        st.markdown("**Participant access**")
-        if st.button("Continue to game"):
-            st.session_state.founder_mode = False
-            st.session_state.phase = "intro"
-            st.success("✅ Participant mode — data will be collected anonymously.")
+        if st.button("🇫🇷 Français"):
+            st.session_state.temp_lang = "fr"
+
+    if st.session_state.temp_lang:
+        if st.session_state.temp_lang == "en":
+            st.info("✅ You selected **English**. Click below to continue.")
+        else:
+            st.info("✅ Vous avez choisi **le français**. Cliquez ci-dessous pour continuer.")
+
+        if st.button("👉 Validate / Valider"):
+            st.session_state.lang = st.session_state.temp_lang
+            st.session_state.phase = "access_mode"
             st.rerun()
     st.stop()
 
-# ------------------ STATE DEFAULTS ------------------
+# ------------------ ACCESS MODE ------------------
+lang = st.session_state.get("lang", "en")
+
+if lang == "fr":
+    title = "🔐 Mode d’accès"
+    founder_btn = "👨‍💻 Je suis le fondateur de l’application"
+    player_btn = "🎉 Je suis ici pour jouer !"
+    back_btn = "⬅️ Retour"
+    pw_label = "Entrez le mot de passe :"
+    validate_btn = "Valider"
+    wrong_pw = "❌ Mot de passe incorrect"
+    correct_pw = "✅ Mode fondateur activé — les données **ne seront pas enregistrées**."
+    continue_text = "✅ Mode participant — vos réponses seront enregistrées anonymement."
+else:
+    title = "🔐 Access Mode"
+    founder_btn = "👨‍💻 I am the founder of the app"
+    player_btn = "🎉 I am here to play!"
+    back_btn = "⬅️ Back"
+    pw_label = "Enter password:"
+    validate_btn = "Validate"
+    wrong_pw = "❌ Incorrect password"
+    correct_pw = "✅ Founder mode enabled — data **will NOT be saved.**"
+    continue_text = "✅ Participant mode — your responses will be collected anonymously."
+
+if "access_step" not in st.session_state:
+    st.session_state.access_step = "choice"
+
+if st.session_state.access_step == "choice":
+    st.title(title)
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button(founder_btn, use_container_width=True):
+            st.session_state.access_step = "founder_pw"
+            st.rerun()
+
+    with col2:
+        if st.button(player_btn, use_container_width=True):
+            st.session_state.founder_mode = False
+            st.session_state.phase = "intro"
+            st.success(continue_text)
+            st.rerun()
+    st.stop()
+
+if st.session_state.access_step == "founder_pw":
+    st.title(title)
+    pw = st.text_input(pw_label, type="password")
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button(validate_btn):
+            if pw == "26102025":
+                st.session_state.founder_mode = True
+                st.session_state.phase = "intro"
+                st.success(correct_pw)
+                st.rerun()
+            else:
+                st.error(wrong_pw)
+
+    with col2:
+        if st.button(back_btn):
+            st.session_state.access_step = "choice"
+            st.rerun()
+    st.stop()
+
+# ------------------ MAIN GAME LOGIC ------------------
 if "round_idx" not in st.session_state:
     st.session_state.round_idx = 0
 if "rounds" not in st.session_state:
     st.session_state.rounds = make_rounds()
 
-# ------------------ MAIN APP ------------------
 lang = st.session_state.lang
 text = T[lang]
 idx = st.session_state.round_idx
@@ -223,13 +261,12 @@ if idx >= len(rounds):
     st.success(text["done"])
     df = to_dataframe(rounds)
 
-    # save automatically if not founder
     if not st.session_state.get("founder_mode", False):
         try:
             save_to_gsheet(df)
-            st.info("✅ Vos résultats ont été enregistrés automatiquement (anonymement).")
+            st.info("✅ Data successfully saved to Google Sheets (anonymous).")
         except Exception as e:
-            st.warning(f"⚠️ Impossible d'enregistrer automatiquement les données : {e}")
+            st.warning(f"⚠️ Couldn't save data automatically: {e}")
     else:
         st.info("🧑‍💻 Founder mode active — no data has been saved.")
 
