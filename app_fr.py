@@ -13,7 +13,7 @@ st.set_page_config(page_title="Sprint Mémoire Couleurs", page_icon="🎯", layo
 GRID_N = 10                 # 10x10
 N_MATRICES = 15             # 15 vérités distinctes
 ROUNDS = N_MATRICES * 2     # chaque vérité 2 fois (placements différents)
-VIEW_SECONDS = 4            # durée d'affichage du tableau
+VIEW_SECONDS = 5            # durée d'affichage du tableau
 N_PEOPLE = 17               # utilisé dans le message
 ANCHOR_PCT = 0.15           # ±15% (caché)
 MIN_TRUE, MAX_TRUE = 25, 75 # bornes du vrai nombre de cases bleues
