@@ -9,6 +9,23 @@ from matplotlib.colors import ListedColormap
 from datetime import datetime
 import gspread
 from google.oauth2.service_account import Credentials
+from google.oauth2.service_account import Credentials
+
+if st.button("🔍 Test Google Sheets connection"):
+    try:
+        scope = ["https://www.googleapis.com/auth/spreadsheets"]
+        creds = Credentials.from_service_account_info(
+            st.secrets["gcp_service_account"], scopes=scope
+        )
+        import gspread
+        client = gspread.authorize(creds)
+        sheet = client.open_by_url(st.secrets["gsheets"]["spreadsheet"]).sheet1
+        sheet.append_row(["✅ Test success", datetime.now().strftime("%d/%m/%Y %H:%M:%S")])
+        st.success("✅ Successfully connected and wrote a test line!")
+    except Exception as e:
+        st.error(f"❌ Connection failed: {e}")
+
+
 
 # ------------------ PAGE CONFIG ------------------
 st.set_page_config(page_title="Biases in Action", page_icon="🎯", layout="centered")
