@@ -204,7 +204,7 @@ if st.session_state.access_step == "choice":
     with col1:
         if st.button(founder_btn, use_container_width=True):
             st.session_state.access_step = "founder_pw"
-            st.experimental_rerun()
+            st.rerun()
 
     with col2:
         if st.button(player_btn, use_container_width=True):
@@ -212,7 +212,7 @@ if st.session_state.access_step == "choice":
             st.session_state.phase = "intro"
             st.session_state.access_step = "done"
             st.success(continue_text)
-            st.experimental_rerun()
+            st.rerun()
 
     st.stop()
 
@@ -229,14 +229,14 @@ if st.session_state.access_step == "founder_pw":
                 st.session_state.phase = "intro"
                 st.session_state.access_step = "done"
                 st.success(correct_pw)
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error(wrong_pw)
 
     with col2:
         if st.button(back_btn):
             st.session_state.access_step = "choice"
-            st.experimental_rerun()
+            st.rerun()
 
     st.stop()
 
