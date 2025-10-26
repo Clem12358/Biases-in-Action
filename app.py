@@ -196,6 +196,7 @@ else:
 if "access_step" not in st.session_state:
     st.session_state.access_step = "choice"
 
+# Step 1 → choose role
 if st.session_state.access_step == "choice":
     st.title(title)
     col1, col2 = st.columns(2)
@@ -203,16 +204,19 @@ if st.session_state.access_step == "choice":
     with col1:
         if st.button(founder_btn, use_container_width=True):
             st.session_state.access_step = "founder_pw"
-            st.rerun()
+            st.experimental_rerun()
 
     with col2:
         if st.button(player_btn, use_container_width=True):
             st.session_state.founder_mode = False
             st.session_state.phase = "intro"
+            st.session_state.access_step = "done"
             st.success(continue_text)
-            st.rerun()
+            st.experimental_rerun()
+
     st.stop()
 
+# Step 2 → founder password
 if st.session_state.access_step == "founder_pw":
     st.title(title)
     pw = st.text_input(pw_label, type="password")
@@ -223,15 +227,17 @@ if st.session_state.access_step == "founder_pw":
             if pw == "26102025":
                 st.session_state.founder_mode = True
                 st.session_state.phase = "intro"
+                st.session_state.access_step = "done"
                 st.success(correct_pw)
-                st.rerun()
+                st.experimental_rerun()
             else:
                 st.error(wrong_pw)
 
     with col2:
         if st.button(back_btn):
             st.session_state.access_step = "choice"
-            st.rerun()
+            st.experimental_rerun()
+
     st.stop()
 
 # ------------------ MAIN GAME LOGIC ------------------
