@@ -9,46 +9,6 @@ from matplotlib.colors import ListedColormap
 from datetime import datetime
 import gspread
 from google.oauth2.service_account import Credentials
-from google.oauth2.service_account import Credentials
-
-if st.button("🔍 Test Google Sheets connection (detailed)"):
-    import traceback
-    try:
-        st.write("🔑 Testing credentials and permissions...")
-
-        # Check GCP service account keys
-        creds_dict = st.secrets.get("gcp_service_account", None)
-        if not creds_dict:
-            st.error("❌ No [gcp_service_account] found in secrets.toml.")
-            st.stop()
-
-        scope = ["https://www.googleapis.com/auth/spreadsheets"]
-        creds = Credentials.from_service_account_info(creds_dict, scopes=scope)
-        st.write("✅ Credentials loaded.")
-
-        # Initialize gspread
-        import gspread
-        client = gspread.authorize(creds)
-        st.write("✅ Authenticated with gspread.")
-
-        # Check Sheets key from secrets
-        sheet_url = st.secrets.get("gsheets", {}).get("spreadsheet", None)
-        if not sheet_url:
-            st.error("❌ No [gsheets] → spreadsheet URL found in secrets.toml.")
-            st.stop()
-        st.write(f"📄 Trying to open: {sheet_url}")
-
-        # Attempt to open and append
-        sheet = client.open_by_url(sheet_url).sheet1
-        sheet.append_row(["✅ Connection successful", datetime.now().strftime("%d/%m/%Y %H:%M:%S")])
-        st.success("✅ Successfully connected and wrote a test row to the Sheet!")
-
-    except Exception as e:
-        st.error(f"❌ Connection failed: {e}")
-        st.caption("Traceback (for debugging):")
-        st.code(traceback.format_exc())
-
-
 
 
 # ------------------ PAGE CONFIG ------------------
