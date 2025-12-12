@@ -630,10 +630,10 @@ T = {
         "calibration_title": "CALIBRATION",
         "calibration_text": "Nous calibrons votre vitesse de réaction et votre attention visuelle.",
         "calibration_focus": "Gardez les yeux fixés sur le centre de l'écran.",
+        "calibration_instruction": "Vous verrez d'abord une barre de chargement, puis une grille. Le chrono démarre quand la grille disparaît.",
         "calibration_ready": "Prêt à commencer",
         "start_button": "Commencer",
-        "loading_text": "Chargement de la grille...",
-        "reaction_time_label": "Temps de réaction moyen",
+        "reaction_time_label": "Temps de réaction moyen (précision ±20%)",
         "input_label": "Votre estimation (0–100) :",
         "validate": "Valider",
         "done": "🎉 Terminé !",
@@ -649,10 +649,10 @@ T = {
         "calibration_title": "CALIBRATION",
         "calibration_text": "We're calibrating your reaction speed and visual attention.",
         "calibration_focus": "Keep your eyes focused on the center of the screen.",
+        "calibration_instruction": "You'll first see a loading bar, then a grid. The timer starts when the grid disappears.",
         "calibration_ready": "Ready to begin",
         "start_button": "Start",
-        "loading_text": "Loading grid...",
-        "reaction_time_label": "Average reaction time",
+        "reaction_time_label": "Avg reaction time (±20% accuracy)",
         "input_label": "Your estimate (0–100):",
         "validate": "Submit",
         "done": "🎉 Done!",
@@ -1278,6 +1278,7 @@ if st.session_state.get("phase") == "intro":
         <div class="calibration-title">{text['calibration_title']}</div>
         <div class="calibration-text">{text['calibration_text']}</div>
         <div class="calibration-text" style="font-weight: 600;">{text['calibration_focus']}</div>
+        <div class="calibration-text" style="font-size: 1rem; margin-top: 1rem; opacity: 0.85;">{text['calibration_instruction']}</div>
         <div class="focus-dot"></div>
     </div>
     """, unsafe_allow_html=True)
@@ -1425,7 +1426,7 @@ current: RoundItem = rounds[idx]
 # Calculate anchor percentage for loading bar (use integer)
 anchor_pct = int(round(current.anchor_value))
 
-# LOADING PHASE - Hamster animation with progress bar
+# LOADING PHASE - Hamster animation with progress bar (7 seconds total)
 if st.session_state.phase == "loading":
     # Initialize loading state
     if "loading_step" not in st.session_state:
@@ -1433,10 +1434,45 @@ if st.session_state.phase == "loading":
         st.session_state.loading_start = time.time()
 
     step = st.session_state.loading_step
+    elapsed = time.time() - st.session_state.loading_start
 
-    # Hamster HTML - clean, minimal display
+    # Hamster speeds up in later steps
     hamster_speed = "fast" if step >= 2 else ""
-    hamster_html = f"""
+
+    # Calculate progress based on step
+    if step == 0:
+        # Rise to anchor% over 2 seconds
+        progress = min(anchor_pct, int((elapsed / 2.0) * anchor_pct))
+        if elapsed >= 2.0:
+            st.session_state.loading_step = 1
+            st.session_state.step1_start = time.time()
+    elif step == 1:
+        # Pause at anchor% for 1 second
+        progress = anchor_pct
+        step_elapsed = time.time() - st.session_state.step1_start
+        if step_elapsed >= 1.0:
+            st.session_state.loading_step = 2
+            st.session_state.step2_start = time.time()
+    elif step == 2:
+        # Stay at anchor% for 3 seconds (hamster accelerates)
+        progress = anchor_pct
+        step_elapsed = time.time() - st.session_state.step2_start
+        if step_elapsed >= 3.0:
+            st.session_state.loading_step = 3
+            st.session_state.step3_start = time.time()
+    else:
+        # Jump to 100% over 1 second
+        step_elapsed = time.time() - st.session_state.step3_start
+        progress = min(100, anchor_pct + int((step_elapsed / 1.0) * (100 - anchor_pct)))
+        if step_elapsed >= 1.0:
+            for key in ["loading_step", "loading_start", "step1_start", "step2_start", "step3_start"]:
+                if key in st.session_state:
+                    del st.session_state[key]
+            st.session_state.phase = "show"
+            st.rerun()
+
+    # Display hamster and progress
+    st.markdown(f"""
     <div style="background: #f8fafc; border-radius: 16px; padding: 2rem; text-align: center;">
         <div aria-label="Hamster running in wheel" role="img" class="wheel-and-hamster {hamster_speed}">
             <div class="wheel"></div>
@@ -1456,83 +1492,36 @@ if st.session_state.phase == "loading":
             </div>
             <div class="spoke"></div>
         </div>
-    """
+        <div style="font-size: 3.5rem; font-weight: 900; color: #1e3a5f; margin-top: 1.5rem;">{progress}%</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    if step == 0:
-        # Step 0: Rise to anchor% (2 seconds)
-        elapsed = time.time() - st.session_state.loading_start
-        progress = min(anchor_pct, int((elapsed / 2.0) * anchor_pct))
+    st.progress(progress / 100)
 
-        st.markdown(hamster_html + f"""
-            <div style="font-size: 3rem; font-weight: 800; color: #2b6cb0; margin-top: 1rem;">{progress}%</div>
-        </div>
-        """, unsafe_allow_html=True)
-        st.progress(progress / 100)
+    time.sleep(0.08)
+    st.rerun()
 
-        if elapsed >= 2.0:
-            st.session_state.loading_step = 1
-            st.session_state.step1_start = time.time()
-        time.sleep(0.05)
-        st.rerun()
-
-    elif step == 1:
-        # Step 1: Pause at anchor% - normal speed (1 second)
-        st.markdown(hamster_html + f"""
-            <div style="font-size: 4rem; font-weight: 900; color: #1e3a5f; margin-top: 1rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">{anchor_pct}%</div>
-        </div>
-        """, unsafe_allow_html=True)
-        st.progress(anchor_pct / 100)
-
-        elapsed = time.time() - st.session_state.step1_start
-        if elapsed >= 1.0:
-            st.session_state.loading_step = 2
-            st.session_state.step2_start = time.time()
-        time.sleep(0.1)
-        st.rerun()
-
-    elif step == 2:
-        # Step 2: Hamster accelerates, number stays BIG (3 seconds)
-        st.markdown(hamster_html + f"""
-            <div style="font-size: 5rem; font-weight: 900; color: #1e3a5f; margin-top: 1rem; text-shadow: 2px 2px 8px rgba(43,108,176,0.3);">{anchor_pct}%</div>
-        </div>
-        """, unsafe_allow_html=True)
-        st.progress(anchor_pct / 100)
-
-        elapsed = time.time() - st.session_state.step2_start
-        if elapsed >= 3.0:
-            st.session_state.loading_step = 3
-            st.session_state.step3_start = time.time()
-        time.sleep(0.1)
-        st.rerun()
-
-    elif step == 3:
-        # Step 3: Quick jump to 100% (1 second)
-        elapsed = time.time() - st.session_state.step3_start
-        progress = min(100, anchor_pct + int((elapsed / 1.0) * (100 - anchor_pct)))
-
-        st.markdown(hamster_html + f"""
-            <div style="font-size: 3rem; font-weight: 800; color: #2b6cb0; margin-top: 1rem;">{progress}%</div>
-        </div>
-        """, unsafe_allow_html=True)
-        st.progress(progress / 100)
-
-        if elapsed >= 1.0:
-            # Clean up and move to show grid
-            for key in ["loading_step", "loading_start", "step1_start", "step2_start", "step3_start"]:
-                if key in st.session_state:
-                    del st.session_state[key]
-            st.session_state.phase = "show"
-            st.rerun()
-        time.sleep(0.05)
-        st.rerun()
-
-    st.stop()
-
-# SHOW GRID
+# SHOW GRID - with reaction time anchor displayed above
 if st.session_state.phase == "show":
+    # Generate and store noise for this round
+    noise_key = f"noise_{idx}"
+    if noise_key not in st.session_state:
+        st.session_state[noise_key] = random.uniform(-0.1, 0.1)
+
+    base_reaction = anchor_pct / 10
+    fake_reaction_time = base_reaction + st.session_state[noise_key]
+
+    # Show reaction time ABOVE the grid (the anchor)
     st.markdown(f"""
-    <div style="text-align: center; padding: 1rem; background: #f8fafc; border-radius: 12px; margin-bottom: 1rem;">
-        <span style="font-size: 1.2rem; color: #2b6cb0;">{text['memorize']}</span>
+    <div style="text-align: center; padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%); border-radius: 10px; margin-bottom: 1rem; border-left: 4px solid #2b6cb0;">
+        <span style="font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 1px;">{text['reaction_time_label']}</span>
+        <span style="font-size: 1.3rem; font-weight: 700; color: #1e3a5f; margin-left: 0.5rem;">{fake_reaction_time:.1f}s</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style="text-align: center; padding: 0.5rem; margin-bottom: 0.5rem;">
+        <span style="font-size: 1.1rem; color: #2b6cb0; font-weight: 600;">{text['memorize']}</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1544,21 +1533,21 @@ if st.session_state.phase == "show":
     st.session_state.phase = "estimate"
     st.rerun()
 
-# INPUT - Show fake reaction time as anchor
+# INPUT - Show fake reaction time as anchor (smaller version)
 elif st.session_state.phase == "estimate":
-    # Calculate fake reaction time: anchor as seconds + small random noise
-    # Store noise in session state so it doesn't change on rerender
+    # Use the noise already generated during show phase
     noise_key = f"noise_{idx}"
     if noise_key not in st.session_state:
         st.session_state[noise_key] = random.uniform(-0.1, 0.1)
 
-    base_reaction = anchor_pct / 10  # Convert to seconds (e.g., 68 -> 6.8s)
+    base_reaction = anchor_pct / 10
     fake_reaction_time = base_reaction + st.session_state[noise_key]
 
+    # Smaller, more subtle reaction time display
     st.markdown(f"""
-    <div class="reaction-time-box">
-        <div class="reaction-time-label">{text['reaction_time_label']}</div>
-        <div class="reaction-time-value">{fake_reaction_time:.1f}s</div>
+    <div style="text-align: center; padding: 0.5rem 1rem; background: #f8fafc; border-radius: 8px; margin-bottom: 1rem; border-left: 3px solid #94a3b8;">
+        <span style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px;">{text['reaction_time_label']}</span>
+        <span style="font-size: 0.95rem; font-weight: 600; color: #64748b; margin-left: 0.4rem;">{fake_reaction_time:.1f}s</span>
     </div>
     """, unsafe_allow_html=True)
 
