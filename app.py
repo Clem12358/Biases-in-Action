@@ -818,11 +818,7 @@ if st.session_state.access_step == "founder_pw":
     with col1:
         if st.button(access_texts["validate_btn"], use_container_width=True):
             if pw == DASHBOARD_PASSWORD:
-                st.session_state.founder_mode = True
-                st.session_state.phase = "get_name"
-                st.session_state.access_step = "done"
-                st.success(access_texts["correct_pw"])
-                time.sleep(1)
+                st.session_state.access_step = "founder_choice"
                 st.rerun()
             else:
                 st.error(access_texts["wrong_pw"])
@@ -834,15 +830,70 @@ if st.session_state.access_step == "founder_pw":
 
     st.stop()
 
+# Founder choice: Dashboard or Test Game
+if st.session_state.access_step == "founder_choice":
+    if lang == "fr":
+        st.markdown("<h1 style='text-align: center;'>🔓 Accès Fondateur</h1>", unsafe_allow_html=True)
+        st.success("✅ Authentification réussie !")
+        dashboard_btn = "📊 Accéder au Dashboard"
+        test_btn = "🎮 Tester le jeu (sans enregistrer)"
+        dashboard_help = "Voir les résultats en temps réel"
+        test_help = "Jouer sans sauvegarder les données"
+    else:
+        st.markdown("<h1 style='text-align: center;'>🔓 Founder Access</h1>", unsafe_allow_html=True)
+        st.success("✅ Authentication successful!")
+        dashboard_btn = "📊 Access Dashboard"
+        test_btn = "🎮 Test the game (no data saved)"
+        dashboard_help = "View live results"
+        test_help = "Play without saving data"
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #e8f4f8 0%, #d1e8f0 100%); padding: 1.5rem; border-radius: 12px; text-align: center; margin-bottom: 1rem;">
+            <div style="font-size: 2.5rem;">📊</div>
+            <div style="font-weight: bold; color: #1e3a5f; margin: 0.5rem 0;">{dashboard_help}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button(dashboard_btn, use_container_width=True, key="goto_dashboard"):
+            st.session_state.dashboard_authenticated = True
+            st.query_params["page"] = "dashboard"
+            st.rerun()
+
+    with col2:
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #f0f8e8 0%, #e0f0d8 100%); padding: 1.5rem; border-radius: 12px; text-align: center; margin-bottom: 1rem;">
+            <div style="font-size: 2.5rem;">🎮</div>
+            <div style="font-weight: bold; color: #1e3a5f; margin: 0.5rem 0;">{test_help}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button(test_btn, use_container_width=True, key="test_game"):
+            st.session_state.founder_mode = True
+            st.session_state.phase = "get_name"
+            st.session_state.access_step = "done"
+            st.rerun()
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button(access_texts["back_btn"], use_container_width=True):
+        st.session_state.access_step = "choice"
+        st.rerun()
+
+    st.stop()
+
 # ------------------ GET PARTICIPANT NAME ------------------
 if st.session_state.get("phase") == "get_name":
     text = T[lang]
 
     st.markdown(f"<h1 style='text-align: center;'>{text['title']}</h1>", unsafe_allow_html=True)
 
-    st.markdown("""
-    <div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
-    """, unsafe_allow_html=True)
+    # Show founder mode indicator if applicable
+    if st.session_state.get("founder_mode", False):
+        st.info("🧑‍💻 " + ("Mode fondateur — les données ne seront pas enregistrées" if lang == "fr" else "Founder mode — data will not be saved"))
+
+    st.markdown("<br>", unsafe_allow_html=True)
 
     participant_name = st.text_input(
         text["participant_name_label"],
@@ -850,8 +901,6 @@ if st.session_state.get("phase") == "get_name":
         help=text["participant_name_help"],
         key="participant_name_input"
     )
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
@@ -863,7 +912,7 @@ if st.session_state.get("phase") == "get_name":
             st.rerun()
 
     if not participant_name.strip():
-        st.info("👆 " + ("Entrez votre nom pour continuer" if lang == "fr" else "Enter your name to continue"))
+        st.warning("👆 " + ("Entrez votre nom pour continuer" if lang == "fr" else "Enter your name to continue"))
 
     st.stop()
 
