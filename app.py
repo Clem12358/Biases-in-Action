@@ -1361,12 +1361,20 @@ if idx >= len(rounds):
             Quand on voit un **nombre avant de donner une estimation**, notre cerveau garde ce nombre comme point de départ,
             même s'il n'a **aucun lien avec la vraie réponse**. Ce nombre devient une **ancre** : il tire nos estimations vers lui.
 
-            #### 🧩 Comment vous avez été "piégé" :
-            Dans ce jeu, chaque grille de carrés bleus a été montrée **deux fois**, avec exactement **le même nombre de carrés**.
-            Mais avant votre réponse, on vous a indiqué :
-            > "En moyenne, 17 personnes ont répondu X."
+            #### 🎭 Surprise ! Voici comment on vous a piégé :
 
-            Ce **X** était volontairement **un peu plus haut (+15%) ou plus bas (-15%)** que la vraie valeur.
+            **Il n'y avait pas de vraie calibration.** Tout était conçu pour vous ancrer subtilement !
+
+            1. **Le pourcentage de chargement** (avec le hamster) n'était pas aléatoire — c'était l'ancre !
+            2. **Le "temps de réaction moyen"** affiché était simplement ce pourcentage converti en secondes (ex: 68% → 6.8s)
+            3. Ce nombre n'avait **aucun rapport** avec le vrai nombre de carrés bleus
+
+            #### 🧩 Le piège en détail :
+            Chaque grille a été montrée **deux fois** avec le même nombre de carrés bleus, mais :
+            - Une fois avec une ancre **basse** (-15% de la vraie valeur)
+            - Une fois avec une ancre **haute** (+15% de la vraie valeur)
+
+            La différence entre vos estimations pour la même grille révèle à quel point l'ancre vous a influencé !
             """)
         else:
             st.markdown("### 🧠 What do your results mean?")
@@ -1383,12 +1391,20 @@ if idx >= len(rounds):
             When we see a **number before giving an estimate**, our brain keeps it as a starting point,
             even if it's **completely unrelated** to the real answer. That number becomes an **anchor** — it pulls our guesses toward it.
 
-            #### 🧩 How we "tricked" you:
-            Every grid of blue squares was shown **twice**, with **the same true count**.
-            But before your answer, you saw:
-            > "On average, 17 people answered X."
+            #### 🎭 Surprise! Here's how we tricked you:
 
-            That **X** was deliberately set **+15% higher or -15% lower** than the real number.
+            **There was no real calibration.** It was all designed to subtly anchor you!
+
+            1. **The loading percentage** (with the hamster) wasn't random — it was the anchor!
+            2. **The "average reaction time"** displayed was simply that percentage converted to seconds (e.g., 68% → 6.8s)
+            3. That number had **nothing to do** with the actual number of blue squares
+
+            #### 🧩 The trick in detail:
+            Every grid was shown **twice** with the same number of blue squares, but:
+            - Once with a **low anchor** (-15% of the true value)
+            - Once with a **high anchor** (+15% of the true value)
+
+            The difference between your estimates for the same grid reveals how much the anchor influenced you!
             """)
 
     st.divider()
@@ -1461,10 +1477,10 @@ if st.session_state.phase == "loading":
             st.session_state.loading_step = 3
             st.session_state.step3_start = time.time()
     else:
-        # Jump to 100% over 1 second
+        # Jump to 100% over 0.5 second
         step_elapsed = time.time() - st.session_state.step3_start
-        progress = min(100, anchor_pct + int((step_elapsed / 1.0) * (100 - anchor_pct)))
-        if step_elapsed >= 1.0:
+        progress = min(100, anchor_pct + int((step_elapsed / 0.5) * (100 - anchor_pct)))
+        if step_elapsed >= 0.5:
             for key in ["loading_step", "loading_start", "step1_start", "step2_start", "step3_start"]:
                 if key in st.session_state:
                     del st.session_state[key]
