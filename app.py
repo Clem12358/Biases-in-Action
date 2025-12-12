@@ -660,13 +660,12 @@ T = {
         "title": "🎯 Sprint Mémoire Couleurs",
         # Instructions page
         "instructions_title": "📋 Comment jouer",
-        "instructions_goal": "**Votre objectif :** Estimer le nombre de carrés bleus dans une grille.",
-        "instructions_brief": "**Important :** La grille ne s'affichera que pendant **5 secondes**. C'est volontaire ! Ce test mesure votre capacité à estimer rapidement.",
+        "instructions_goal": "<strong>Votre objectif :</strong> Estimer le nombre de carrés bleus dans une grille.",
+        "instructions_brief": "<strong>Important :</strong> La grille ne s'affichera que pendant <strong>5 secondes</strong>. C'est volontaire ! Ce test mesure votre capacité à estimer rapidement.",
         "instructions_steps_title": "Le déroulement :",
-        "instructions_step1": "1. Une phase de calibration (chargement)",
-        "instructions_step2": "2. La grille apparaît pendant 5 secondes — mémorisez-la !",
-        "instructions_step3": "3. Entrez votre estimation du nombre de carrés bleus",
-        "instructions_step4": "4. Répétez pour 16 tours au total",
+        "instructions_step1": "1. La grille apparaît pendant 5 secondes — mémorisez-la !",
+        "instructions_step2": "2. Entrez votre estimation du nombre de carrés bleus",
+        "instructions_step3": "3. Répétez pour 16 tours au total",
         "instructions_understood": "Avez-vous bien compris les règles ?",
         "yes_understood": "✅ Oui, j'ai compris !",
         "no_repeat": "🔄 Non, je souhaite revoir les explications",
@@ -693,13 +692,12 @@ T = {
         "title": "🎯 Color Memory Sprint",
         # Instructions page
         "instructions_title": "📋 How to Play",
-        "instructions_goal": "**Your goal:** Estimate the number of blue squares in a grid.",
-        "instructions_brief": "**Important:** The grid will only be shown for **5 seconds**. This is intentional! This test measures your ability to estimate quickly.",
+        "instructions_goal": "<strong>Your goal:</strong> Estimate the number of blue squares in a grid.",
+        "instructions_brief": "<strong>Important:</strong> The grid will only be shown for <strong>5 seconds</strong>. This is intentional! This test measures your ability to estimate quickly.",
         "instructions_steps_title": "How it works:",
-        "instructions_step1": "1. A calibration phase (loading)",
-        "instructions_step2": "2. The grid appears for 5 seconds — memorize it!",
-        "instructions_step3": "3. Enter your estimate of the number of blue squares",
-        "instructions_step4": "4. Repeat for 16 rounds total",
+        "instructions_step1": "1. The grid appears for 5 seconds — memorize it!",
+        "instructions_step2": "2. Enter your estimate of the number of blue squares",
+        "instructions_step3": "3. Repeat for 16 rounds total",
         "instructions_understood": "Did you understand the rules?",
         "yes_understood": "✅ Yes, I understood!",
         "no_repeat": "🔄 No, I wish to look at it again",
@@ -1326,7 +1324,6 @@ if st.session_state.get("phase") == "instructions":
             <li>{text['instructions_step1']}</li>
             <li>{text['instructions_step2']}</li>
             <li>{text['instructions_step3']}</li>
-            <li>{text['instructions_step4']}</li>
         </ul>
     </div>
     """, unsafe_allow_html=True)
@@ -1686,29 +1683,32 @@ elif st.session_state.phase == "estimate":
 
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        est_str = st.text_input(
-            text["input_label"],
-            value="",
-            placeholder="0-100",
-            key=f"est_{idx}"
-        )
+        with st.form(key=f"estimate_form_{idx}", clear_on_submit=True):
+            est_str = st.text_input(
+                text["input_label"],
+                value="",
+                placeholder="0-100",
+                key=f"est_{idx}"
+            )
 
-        # Validate input
-        est_valid = False
-        est_value = 0
-        if est_str.strip():
-            try:
-                est_value = int(est_str)
-                if 0 <= est_value <= 100:
-                    est_valid = True
-            except ValueError:
-                pass
+            submitted = st.form_submit_button(text["validate"], use_container_width=True)
 
-        if st.button(text["validate"], use_container_width=True, disabled=not est_valid):
-            current.estimate = est_value
-            st.session_state.round_idx += 1
-            st.session_state.phase = "loading"  # Go to loading for next round
-            st.rerun()
+            if submitted:
+                # Validate input
+                est_valid = False
+                est_value = 0
+                if est_str.strip():
+                    try:
+                        est_value = int(est_str)
+                        if 0 <= est_value <= 100:
+                            est_valid = True
+                    except ValueError:
+                        pass
 
-        if est_str.strip() and not est_valid:
-            st.error("⚠️ " + ("Entrez un nombre entre 0 et 100" if lang == "fr" else "Enter a number between 0 and 100"))
+                if est_valid:
+                    current.estimate = est_value
+                    st.session_state.round_idx += 1
+                    st.session_state.phase = "loading"  # Go to loading for next round
+                    st.rerun()
+                else:
+                    st.error("⚠️ " + ("Entrez un nombre entre 0 et 100" if lang == "fr" else "Enter a number between 0 and 100"))
