@@ -38,6 +38,31 @@ st.markdown("""
         color: #1e3a5f !important;
     }
 
+    /* Force all text to be dark */
+    p, span, div, label, h1, h2, h3, h4, h5, h6 {
+        color: #1e3a5f !important;
+    }
+
+    /* Metric components - force visible text */
+    [data-testid="stMetricLabel"],
+    [data-testid="stMetricValue"],
+    [data-testid="stMetricDelta"],
+    .stMetric label,
+    .stMetric [data-testid="stMetricLabel"] > div,
+    .stMetric [data-testid="stMetricValue"] > div {
+        color: #1e3a5f !important;
+        opacity: 1 !important;
+    }
+
+    [data-testid="stMetricValue"] {
+        color: #1e3a5f !important;
+        font-weight: 700 !important;
+    }
+
+    [data-testid="stMetricLabel"] {
+        color: #64748b !important;
+    }
+
     /* Override dark mode detection */
     @media (prefers-color-scheme: dark) {
         :root {
@@ -51,6 +76,17 @@ st.markdown("""
             background-color: #ffffff !important;
             color: #1e3a5f !important;
         }
+
+        p, span, div, label, h1, h2, h3, h4, h5, h6 {
+            color: #1e3a5f !important;
+        }
+
+        [data-testid="stMetricLabel"],
+        [data-testid="stMetricValue"],
+        [data-testid="stMetricDelta"] {
+            color: #1e3a5f !important;
+            opacity: 1 !important;
+        }
     }
 
     /* Main container styling */
@@ -62,7 +98,7 @@ st.markdown("""
 
     /* Header styling */
     h1 {
-        color: #1e3a5f;
+        color: #1e3a5f !important;
         text-align: center;
         padding-bottom: 1rem;
         border-bottom: 3px solid #2b6cb0;
@@ -70,12 +106,12 @@ st.markdown("""
     }
 
     h2, h3 {
-        color: #2d4a6f;
+        color: #2d4a6f !important;
     }
 
     /* Card-like containers */
     .stMetric {
-        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
         padding: 1rem;
         border-radius: 12px;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -85,7 +121,7 @@ st.markdown("""
     /* Button styling */
     .stButton > button {
         background: linear-gradient(135deg, #2b6cb0 0%, #1e4e8c 100%);
-        color: white;
+        color: white !important;
         border: none;
         border-radius: 8px;
         padding: 0.6rem 1.5rem;
