@@ -8,14 +8,27 @@ Anchoring bias is a cognitive phenomenon where people rely too heavily on the fi
 
 ## How the Game Works
 
-1. **Visual Estimation Task**: Participants see a 10×10 grid with blue squares for 5 seconds
-2. **The Anchor**: Before estimating, participants see: *"On average, 17 people answered X"*
-3. **The Trick**: Each grid is shown **twice** with the same true count, but with different anchors:
-   - Once with a **low anchor** (-15% of true value)
-   - Once with a **high anchor** (+15% of true value)
-4. **30 Rounds**: 15 unique grids × 2 anchor conditions
+### The Game Flow
 
-The difference in estimates between high and low anchor conditions reveals the anchoring effect!
+1. **Calibration Intro**: Participants see a flashy "CALIBRATION" screen explaining we're measuring their reaction time and visual attention
+2. **Loading Phase**: A cute hamster animation runs while a percentage counter rises (this is the anchor!)
+3. **Fake Reaction Time**: Participants see "Avg reaction time (±20% accuracy): X.Xs" - derived from the anchor percentage
+4. **Visual Estimation**: The grid appears with the reaction time displayed above it
+5. **Submit Answer**: Participants estimate how many blue squares they saw
+
+### The Subtle Anchoring Trick
+
+The anchoring is designed to work even on participants who know about cognitive biases:
+
+- **The Pretext**: "Calibration" makes the loading percentage seem like technical data, not a hint
+- **The Anchor**: The percentage shown during loading (e.g., 68%) becomes a fake "reaction time" (6.8s)
+- **The Exposure**: Participants see this number prominently above the grid and again when answering
+- **The Trick**: Each grid is shown **twice** with the same true count, but with different anchors:
+  - Once with a **low anchor** (-15% of true value)
+  - Once with a **high anchor** (+15% of true value)
+- **30 Rounds**: 15 unique grids × 2 anchor conditions
+
+The difference in estimates between high and low anchor conditions reveals the anchoring effect - even when participants think they're just seeing "calibration data"!
 
 ## Features
 
@@ -100,9 +113,11 @@ streamlit run app.py
    - Select their language
    - Choose "I am here to play!"
    - Enter their name/nickname
+   - Go through "calibration" (they won't know it's the anchoring mechanism!)
    - Complete 30 rounds
 3. **Open the dashboard** (`?page=dashboard`) on the presenter's screen
 4. **Click Refresh** to see live results as participants complete the game
+5. **Reveal the trick**: After everyone completes, explain how the "calibration" and "reaction time" were actually anchors!
 
 ### Access Modes
 
@@ -173,6 +188,16 @@ ANCHOR_PCT = 0.15        # ±15% anchor variance
 MIN_TRUE, MAX_TRUE = 25, 75  # Blue squares range
 DASHBOARD_PASSWORD = "26102025"
 ```
+
+### Loading Phase Timing
+
+The hamster loading animation follows this sequence:
+- **2 seconds**: Progress rises from 0% to anchor%
+- **1 second**: Pause at anchor% (normal hamster speed)
+- **3 seconds**: Hold at anchor% (hamster accelerates - draws attention!)
+- **0.5 seconds**: Quick jump to 100%
+
+Total: ~6.5 seconds of exposure to the anchor number
 
 ## Contributing
 

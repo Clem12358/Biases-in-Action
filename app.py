@@ -1461,10 +1461,10 @@ if st.session_state.phase == "loading":
             st.session_state.loading_step = 3
             st.session_state.step3_start = time.time()
     else:
-        # Jump to 100% over 1 second
+        # Jump to 100% over 0.5 second
         step_elapsed = time.time() - st.session_state.step3_start
-        progress = min(100, anchor_pct + int((step_elapsed / 1.0) * (100 - anchor_pct)))
-        if step_elapsed >= 1.0:
+        progress = min(100, anchor_pct + int((step_elapsed / 0.5) * (100 - anchor_pct)))
+        if step_elapsed >= 0.5:
             for key in ["loading_step", "loading_start", "step1_start", "step2_start", "step3_start"]:
                 if key in st.session_state:
                     del st.session_state[key]
