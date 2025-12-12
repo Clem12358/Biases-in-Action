@@ -22,6 +22,37 @@ st.set_page_config(
 # ------------------ CUSTOM CSS FOR BETTER UI ------------------
 st.markdown("""
 <style>
+    /* Force light mode */
+    :root {
+        color-scheme: light only !important;
+    }
+
+    [data-testid="stAppViewContainer"],
+    [data-testid="stHeader"],
+    [data-testid="stToolbar"],
+    [data-testid="stDecoration"],
+    [data-testid="stStatusWidget"],
+    .main,
+    .stApp {
+        background-color: #ffffff !important;
+        color: #1e3a5f !important;
+    }
+
+    /* Override dark mode detection */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            color-scheme: light only !important;
+        }
+
+        [data-testid="stAppViewContainer"],
+        [data-testid="stHeader"],
+        .main,
+        .stApp {
+            background-color: #ffffff !important;
+            color: #1e3a5f !important;
+        }
+    }
+
     /* Main container styling */
     .main .block-container {
         padding-top: 2rem;
@@ -638,7 +669,8 @@ T = {
         "instructions_step4": "4. Répétez pour 16 tours au total",
         "instructions_understood": "Avez-vous bien compris les règles ?",
         "yes_understood": "✅ Oui, j'ai compris !",
-        "no_repeat": "🔄 Non, répétez les explications",
+        "no_repeat": "🔄 Non, je souhaite revoir les explications",
+        "okay_button": "OK",
         # Calibration
         "calibration_title": "CALIBRATION",
         "calibration_text": "Nous calibrons votre vitesse de réaction et votre attention visuelle.",
@@ -670,7 +702,8 @@ T = {
         "instructions_step4": "4. Repeat for 16 rounds total",
         "instructions_understood": "Did you understand the rules?",
         "yes_understood": "✅ Yes, I understood!",
-        "no_repeat": "🔄 No, repeat the explanations",
+        "no_repeat": "🔄 No, I wish to look at it again",
+        "okay_button": "Okay",
         # Calibration
         "calibration_title": "CALIBRATION",
         "calibration_text": "We're calibrating your reaction speed and visual attention.",
@@ -1301,7 +1334,7 @@ if st.session_state.get("phase") == "instructions":
     # Continue to confirmation
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button(text["start_button"], use_container_width=True, key="continue_to_confirm"):
+        if st.button(text["okay_button"], use_container_width=True, key="continue_to_confirm"):
             st.session_state.phase = "confirm_understood"
             st.rerun()
 
