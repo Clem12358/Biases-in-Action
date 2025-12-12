@@ -8,12 +8,14 @@ Anchoring bias is a cognitive phenomenon where people rely too heavily on the fi
 
 ## How the Game Works
 
-1. **Visual Estimation Task**: Participants see a 10×10 grid with blue squares for 5 seconds
-2. **The Anchor**: Before estimating, participants see: *"On average, 17 people answered X"*
-3. **The Trick**: Each grid is shown **twice** with the same true count, but with different anchors:
+1. **Calibration splash**: A short (≈4s) intro claims to calibrate reaction speed and visual attention.
+2. **Loading with a hamster wheel**: Between rounds, a hamster animation and progress bar rise to the anchor percent (pausing briefly) before snapping to 100%.
+3. **Visual Estimation Task**: Participants see a 10×10 grid with blue squares for 5 seconds.
+4. **The Anchor (disguised)**: On the answer screen, a fake KPI shows a “calibration time” based on the anchor value (e.g., 6.8s when the anchor is 68%).
+5. **The Trick**: Each grid is shown **twice** with the same true count, but with different anchors:
    - Once with a **low anchor** (-15% of true value)
    - Once with a **high anchor** (+15% of true value)
-4. **30 Rounds**: 15 unique grids × 2 anchor conditions
+6. **30 Rounds**: 15 unique grids × 2 anchor conditions
 
 The difference in estimates between high and low anchor conditions reveals the anchoring effect!
 
@@ -22,6 +24,8 @@ The difference in estimates between high and low anchor conditions reveals the a
 ### For Participants
 - Bilingual support (English/French)
 - Clean, modern UI with intuitive navigation
+- Playful hamster loading animation that subtly carries the anchor
+- Fake calibration KPI (reaction time) to conceal the anchoring cue
 - Personal results with bias strength indicator
 - Downloadable CSV of individual results
 - Educational explanation of what happened
