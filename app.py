@@ -1536,7 +1536,7 @@ elif st.session_state.phase == "estimate":
     # Store noise in session state so it doesn't change on rerender
     noise_key = f"noise_{idx}"
     if noise_key not in st.session_state:
-        st.session_state[noise_key] = random.uniform(-0.5, 0.5)
+        st.session_state[noise_key] = random.uniform(-0.1, 0.1)
 
     base_reaction = anchor_pct / 10  # Convert to seconds (e.g., 68 -> 6.8s)
     fake_reaction_time = base_reaction + st.session_state[noise_key]
