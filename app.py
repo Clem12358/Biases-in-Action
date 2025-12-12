@@ -633,7 +633,7 @@ T = {
         "calibration_ready": "Prêt à commencer",
         "start_button": "Commencer",
         "loading_text": "Chargement de la grille...",
-        "reaction_time_label": "Temps de réaction moyen",
+        "reaction_time_label": "Temps de calibration moyen",
         "input_label": "Votre estimation (0–100) :",
         "validate": "Valider",
         "done": "🎉 Terminé !",
@@ -652,7 +652,7 @@ T = {
         "calibration_ready": "Ready to begin",
         "start_button": "Start",
         "loading_text": "Loading grid...",
-        "reaction_time_label": "Average reaction time",
+        "reaction_time_label": "Average calibration time",
         "input_label": "Your estimate (0–100):",
         "validate": "Submit",
         "done": "🎉 Done!",
@@ -1532,14 +1532,14 @@ if st.session_state.phase == "show":
 
 # INPUT - Show fake reaction time as anchor
 elif st.session_state.phase == "estimate":
-    # Calculate fake reaction time: anchor as seconds + small random noise
+    # Calculate fake reaction time: anchor as seconds with light random noise
     # Store noise in session state so it doesn't change on rerender
     noise_key = f"noise_{idx}"
     if noise_key not in st.session_state:
-        st.session_state[noise_key] = random.uniform(-0.05, 0.05)
+        st.session_state[noise_key] = random.uniform(-0.3, 0.3)
 
-    base_reaction = anchor_pct / 100  # Convert to seconds (e.g., 68 -> 0.68)
-    fake_reaction_time = base_reaction + st.session_state[noise_key]
+    base_reaction = anchor_pct / 10  # Convert to believable seconds (e.g., 68 -> 6.8s)
+    fake_reaction_time = max(0.5, base_reaction + st.session_state[noise_key])
 
     st.markdown(f"""
     <div class="reaction-time-box">
