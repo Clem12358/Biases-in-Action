@@ -1434,12 +1434,11 @@ if st.session_state.phase == "loading":
 
     step = st.session_state.loading_step
 
-    # Hamster HTML
-    hamster_class = "wheel-and-hamster fast" if step == 2 else "wheel-and-hamster"
+    # Hamster HTML - clean, minimal display
+    hamster_speed = "fast" if step >= 2 else ""
     hamster_html = f"""
-    <div class="loading-container">
-        <div class="loading-text">{text['loading_text']}</div>
-        <div aria-label="Hamster running in wheel" role="img" class="{hamster_class}">
+    <div style="background: #f8fafc; border-radius: 16px; padding: 2rem; text-align: center;">
+        <div aria-label="Hamster running in wheel" role="img" class="wheel-and-hamster {hamster_speed}">
             <div class="wheel"></div>
             <div class="hamster">
                 <div class="hamster__body">
@@ -1459,54 +1458,69 @@ if st.session_state.phase == "loading":
         </div>
     """
 
-    # Progress bar animation in steps
     if step == 0:
-        # Step 0: Quick rise to anchor% (0.8 seconds)
+        # Step 0: Rise to anchor% (2 seconds)
         elapsed = time.time() - st.session_state.loading_start
-        progress = min(anchor_pct, int((elapsed / 0.8) * anchor_pct))
+        progress = min(anchor_pct, int((elapsed / 2.0) * anchor_pct))
+
         st.markdown(hamster_html + f"""
-            <div class="loading-percentage">{progress}%</div>
+            <div style="font-size: 3rem; font-weight: 800; color: #2b6cb0; margin-top: 1rem;">{progress}%</div>
         </div>
         """, unsafe_allow_html=True)
         st.progress(progress / 100)
 
-        if elapsed >= 0.8:
+        if elapsed >= 2.0:
             st.session_state.loading_step = 1
-            st.session_state.loading_pause_start = time.time()
+            st.session_state.step1_start = time.time()
         time.sleep(0.05)
         st.rerun()
 
     elif step == 1:
-        # Step 1: Pause at anchor% (0.8 seconds) - hamster keeps running
+        # Step 1: Pause at anchor% - normal speed (1 second)
         st.markdown(hamster_html + f"""
-            <div class="loading-percentage" style="color: #2b6cb0; font-weight: 800;">{anchor_pct}%</div>
+            <div style="font-size: 4rem; font-weight: 900; color: #1e3a5f; margin-top: 1rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">{anchor_pct}%</div>
         </div>
         """, unsafe_allow_html=True)
         st.progress(anchor_pct / 100)
 
-        elapsed = time.time() - st.session_state.loading_pause_start
-        if elapsed >= 0.8:
+        elapsed = time.time() - st.session_state.step1_start
+        if elapsed >= 1.0:
             st.session_state.loading_step = 2
-            st.session_state.loading_final_start = time.time()
+            st.session_state.step2_start = time.time()
         time.sleep(0.1)
         st.rerun()
 
     elif step == 2:
-        # Step 2: Fast jump to 100% (0.3 seconds) - hamster runs faster
-        elapsed = time.time() - st.session_state.loading_final_start
-        progress = min(100, anchor_pct + int((elapsed / 0.3) * (100 - anchor_pct)))
+        # Step 2: Hamster accelerates, number stays BIG (3 seconds)
         st.markdown(hamster_html + f"""
-            <div class="loading-percentage">{progress}%</div>
+            <div style="font-size: 5rem; font-weight: 900; color: #1e3a5f; margin-top: 1rem; text-shadow: 2px 2px 8px rgba(43,108,176,0.3);">{anchor_pct}%</div>
+        </div>
+        """, unsafe_allow_html=True)
+        st.progress(anchor_pct / 100)
+
+        elapsed = time.time() - st.session_state.step2_start
+        if elapsed >= 3.0:
+            st.session_state.loading_step = 3
+            st.session_state.step3_start = time.time()
+        time.sleep(0.1)
+        st.rerun()
+
+    elif step == 3:
+        # Step 3: Quick jump to 100% (1 second)
+        elapsed = time.time() - st.session_state.step3_start
+        progress = min(100, anchor_pct + int((elapsed / 1.0) * (100 - anchor_pct)))
+
+        st.markdown(hamster_html + f"""
+            <div style="font-size: 3rem; font-weight: 800; color: #2b6cb0; margin-top: 1rem;">{progress}%</div>
         </div>
         """, unsafe_allow_html=True)
         st.progress(progress / 100)
 
-        if elapsed >= 0.3:
+        if elapsed >= 1.0:
             # Clean up and move to show grid
-            del st.session_state.loading_step
-            del st.session_state.loading_start
-            del st.session_state.loading_pause_start
-            del st.session_state.loading_final_start
+            for key in ["loading_step", "loading_start", "step1_start", "step2_start", "step3_start"]:
+                if key in st.session_state:
+                    del st.session_state[key]
             st.session_state.phase = "show"
             st.rerun()
         time.sleep(0.05)
