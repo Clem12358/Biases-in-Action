@@ -26,7 +26,7 @@ The anchoring is designed to work even on participants who know about cognitive 
 - **The Trick**: Each grid is shown **twice** with the same true count, but with different anchors:
   - Once with a **low anchor** (-15% of true value)
   - Once with a **high anchor** (+15% of true value)
-- **30 Rounds**: 15 unique grids × 2 anchor conditions
+- **16 Rounds**: 8 unique grids × 2 anchor conditions
 
 The difference in estimates between high and low anchor conditions reveals the anchoring effect - even when participants think they're just seeing "calibration data"!
 
@@ -114,7 +114,7 @@ streamlit run app.py
    - Choose "I am here to play!"
    - Enter their name/nickname
    - Go through "calibration" (they won't know it's the anchoring mechanism!)
-   - Complete 30 rounds
+   - Complete 16 rounds
 3. **Open the dashboard** (`?page=dashboard`) on the presenter's screen
 4. **Click Refresh** to see live results as participants complete the game
 5. **Reveal the trick**: After everyone completes, explain how the "calibration" and "reaction time" were actually anchors!
@@ -129,14 +129,14 @@ streamlit run app.py
 
 ## Data Structure
 
-Each participant generates 30 rows of data with the following columns:
+Each participant generates 16 rows of data with the following columns:
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `timestamp` | String | Session completion time (DD/MM/YYYY HH:MM:SS) |
 | `participant_name` | String | Name/nickname entered by participant |
-| `index_tour` | Integer | Round number (1-30) |
-| `id_verite` | Integer | Matrix ID (1-15) |
+| `index_tour` | Integer | Round number (1-16) |
+| `id_verite` | Integer | Matrix ID (1-8) |
 | `vrai` | Integer | True count of blue squares |
 | `sens_ancre` | Integer | Anchor direction: -1 (low) or +1 (high) |
 | `valeur_ancre` | Float | Anchor value shown (±15% of true) |
@@ -181,8 +181,8 @@ Key constants in `app.py`:
 
 ```python
 GRID_N = 10              # Grid size (10×10)
-N_MATRICES = 15          # Number of unique grids
-ROUNDS = 30              # Total rounds (15 × 2)
+N_MATRICES = 8           # Number of unique grids
+ROUNDS = 16              # Total rounds (8 × 2)
 VIEW_SECONDS = 5         # Grid display time
 ANCHOR_PCT = 0.15        # ±15% anchor variance
 MIN_TRUE, MAX_TRUE = 25, 75  # Blue squares range

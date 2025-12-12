@@ -504,8 +504,8 @@ st.markdown("""
 
 # ------------------ CONSTANTS ------------------
 GRID_N = 10
-N_MATRICES = 15
-ROUNDS = N_MATRICES * 2
+N_MATRICES = 8
+ROUNDS = N_MATRICES * 2  # 16 rounds total
 VIEW_SECONDS = 5
 ANCHOR_PCT = 0.15
 MIN_TRUE, MAX_TRUE = 25, 75
@@ -627,6 +627,19 @@ def load_from_gsheet() -> pd.DataFrame:
 T = {
     "fr": {
         "title": "🎯 Sprint Mémoire Couleurs",
+        # Instructions page
+        "instructions_title": "📋 Comment jouer",
+        "instructions_goal": "**Votre objectif :** Estimer le nombre de carrés bleus dans une grille.",
+        "instructions_brief": "**Important :** La grille ne s'affichera que pendant **5 secondes**. C'est volontaire ! Ce test mesure votre capacité à estimer rapidement.",
+        "instructions_steps_title": "Le déroulement :",
+        "instructions_step1": "1. Une phase de calibration (chargement)",
+        "instructions_step2": "2. La grille apparaît pendant 5 secondes — mémorisez-la !",
+        "instructions_step3": "3. Entrez votre estimation du nombre de carrés bleus",
+        "instructions_step4": "4. Répétez pour 16 tours au total",
+        "instructions_understood": "Avez-vous bien compris les règles ?",
+        "yes_understood": "✅ Oui, j'ai compris !",
+        "no_repeat": "🔄 Non, répétez les explications",
+        # Calibration
         "calibration_title": "CALIBRATION",
         "calibration_text": "Nous calibrons votre vitesse de réaction et votre attention visuelle.",
         "calibration_focus": "Gardez les yeux fixés sur le centre de l'écran.",
@@ -646,6 +659,19 @@ T = {
     },
     "en": {
         "title": "🎯 Color Memory Sprint",
+        # Instructions page
+        "instructions_title": "📋 How to Play",
+        "instructions_goal": "**Your goal:** Estimate the number of blue squares in a grid.",
+        "instructions_brief": "**Important:** The grid will only be shown for **5 seconds**. This is intentional! This test measures your ability to estimate quickly.",
+        "instructions_steps_title": "How it works:",
+        "instructions_step1": "1. A calibration phase (loading)",
+        "instructions_step2": "2. The grid appears for 5 seconds — memorize it!",
+        "instructions_step3": "3. Enter your estimate of the number of blue squares",
+        "instructions_step4": "4. Repeat for 16 rounds total",
+        "instructions_understood": "Did you understand the rules?",
+        "yes_understood": "✅ Yes, I understood!",
+        "no_repeat": "🔄 No, repeat the explanations",
+        # Calibration
         "calibration_title": "CALIBRATION",
         "calibration_text": "We're calibrating your reaction speed and visual attention.",
         "calibration_focus": "Keep your eyes focused on the center of the screen.",
@@ -1240,13 +1266,71 @@ if st.session_state.get("phase") == "get_name":
     with col2:
         if st.button(text["start_button"], use_container_width=True, disabled=not participant_name.strip()):
             st.session_state.participant_name = participant_name.strip()
-            st.session_state.phase = "intro"
+            st.session_state.phase = "instructions"
             st.session_state.rounds = make_rounds()
             st.session_state.round_idx = 0
             st.rerun()
 
     if not participant_name.strip():
         st.warning("👆 " + ("Entrez votre nom pour continuer" if lang == "fr" else "Enter your name to continue"))
+
+    st.stop()
+
+# ------------------ INSTRUCTIONS PHASE ------------------
+if st.session_state.get("phase") == "instructions":
+    text = T[lang]
+
+    st.markdown(f"<h1 style='text-align: center;'>{text['title']}</h1>", unsafe_allow_html=True)
+
+    # Instructions card
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 2rem; border-radius: 16px; margin: 1rem 0; border-left: 5px solid #2b6cb0;">
+        <h2 style="color: #1e3a5f; margin-top: 0;">{text['instructions_title']}</h2>
+        <p style="font-size: 1.1rem; color: #2d4a6f;">{text['instructions_goal']}</p>
+        <p style="font-size: 1.1rem; color: #c53030; background: #fed7d7; padding: 1rem; border-radius: 8px;">{text['instructions_brief']}</p>
+        <h3 style="color: #2d4a6f; margin-top: 1.5rem;">{text['instructions_steps_title']}</h3>
+        <ul style="font-size: 1.05rem; color: #2d4a6f; line-height: 2;">
+            <li>{text['instructions_step1']}</li>
+            <li>{text['instructions_step2']}</li>
+            <li>{text['instructions_step3']}</li>
+            <li>{text['instructions_step4']}</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Continue to confirmation
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button(text["start_button"], use_container_width=True, key="continue_to_confirm"):
+            st.session_state.phase = "confirm_understood"
+            st.rerun()
+
+    st.stop()
+
+# ------------------ CONFIRMATION PHASE ------------------
+if st.session_state.get("phase") == "confirm_understood":
+    text = T[lang]
+
+    st.markdown(f"<h1 style='text-align: center;'>{text['title']}</h1>", unsafe_allow_html=True)
+
+    st.markdown(f"""
+    <div style="background: linear-gradient(135deg, #fefce8 0%, #fef08a 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0; text-align: center; border: 2px solid #eab308;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🤔</div>
+        <h2 style="color: #854d0e; margin: 0;">{text['instructions_understood']}</h2>
+    </div>
+    """, unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button(text["yes_understood"], use_container_width=True, key="yes_understood"):
+            st.session_state.phase = "intro"
+            st.rerun()
+
+    with col2:
+        if st.button(text["no_repeat"], use_container_width=True, key="no_repeat"):
+            st.session_state.phase = "instructions"
+            st.rerun()
 
     st.stop()
 
@@ -1569,10 +1653,29 @@ elif st.session_state.phase == "estimate":
 
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        est = st.number_input(text["input_label"], min_value=0, max_value=100, step=1, key=f"est_{idx}")
+        est_str = st.text_input(
+            text["input_label"],
+            value="",
+            placeholder="0-100",
+            key=f"est_{idx}"
+        )
 
-        if st.button(text["validate"], use_container_width=True):
-            current.estimate = int(est)
+        # Validate input
+        est_valid = False
+        est_value = 0
+        if est_str.strip():
+            try:
+                est_value = int(est_str)
+                if 0 <= est_value <= 100:
+                    est_valid = True
+            except ValueError:
+                pass
+
+        if st.button(text["validate"], use_container_width=True, disabled=not est_valid):
+            current.estimate = est_value
             st.session_state.round_idx += 1
             st.session_state.phase = "loading"  # Go to loading for next round
             st.rerun()
+
+        if est_str.strip() and not est_valid:
+            st.error("⚠️ " + ("Entrez un nombre entre 0 et 100" if lang == "fr" else "Enter a number between 0 and 100"))
