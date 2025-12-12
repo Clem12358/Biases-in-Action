@@ -1536,15 +1536,15 @@ elif st.session_state.phase == "estimate":
     # Store noise in session state so it doesn't change on rerender
     noise_key = f"noise_{idx}"
     if noise_key not in st.session_state:
-        st.session_state[noise_key] = random.uniform(-0.05, 0.05)
+        st.session_state[noise_key] = random.uniform(-0.5, 0.5)
 
-    base_reaction = anchor_pct / 100  # Convert to seconds (e.g., 68 -> 0.68)
+    base_reaction = anchor_pct / 10  # Convert to seconds (e.g., 68 -> 6.8s)
     fake_reaction_time = base_reaction + st.session_state[noise_key]
 
     st.markdown(f"""
     <div class="reaction-time-box">
         <div class="reaction-time-label">{text['reaction_time_label']}</div>
-        <div class="reaction-time-value">{fake_reaction_time:.2f}s</div>
+        <div class="reaction-time-value">{fake_reaction_time:.1f}s</div>
     </div>
     """, unsafe_allow_html=True)
 
