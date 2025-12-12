@@ -69,9 +69,15 @@ st.markdown("""
     }
 
     /* Progress bar */
-    .stProgress > div > div {
-        background: linear-gradient(90deg, #2b6cb0 0%, #4299e1 100%);
+    .stProgress > div > div > div {
+        background: linear-gradient(90deg, #2b6cb0 0%, #4299e1 100%) !important;
         border-radius: 10px;
+    }
+
+    .stProgress p {
+        color: #1e3a5f !important;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
     }
 
     /* Info boxes */
@@ -1054,7 +1060,13 @@ if idx >= len(rounds):
     st.stop()
 
 # PROGRESSION
-st.progress(idx / len(rounds), text=f"{'Tour' if lang=='fr' else 'Round'} {idx+1}/{len(rounds)}")
+st.markdown(f"""
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+    <span style="font-weight: 600; color: #1e3a5f;">{'Tour' if lang=='fr' else 'Round'} {idx+1}/{len(rounds)}</span>
+    <span style="color: #64748b; font-size: 0.9rem;">{int((idx / len(rounds)) * 100)}%</span>
+</div>
+""", unsafe_allow_html=True)
+st.progress(idx / len(rounds))
 
 current: RoundItem = rounds[idx]
 
