@@ -69,9 +69,15 @@ st.markdown("""
     }
 
     /* Progress bar */
-    .stProgress > div > div {
-        background: linear-gradient(90deg, #2b6cb0 0%, #4299e1 100%);
+    .stProgress > div > div > div {
+        background: linear-gradient(90deg, #2b6cb0 0%, #4299e1 100%) !important;
         border-radius: 10px;
+    }
+
+    .stProgress p {
+        color: #1e3a5f !important;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
     }
 
     /* Info boxes */
@@ -92,6 +98,337 @@ st.markdown("""
     .stNumberInput > div > div > input:focus {
         border-color: #2b6cb0;
         box-shadow: 0 0 0 3px rgba(43, 108, 176, 0.1);
+    }
+
+    /* Hamster wheel animation */
+    .wheel-and-hamster {
+        --dur: 1s;
+        position: relative;
+        width: 12em;
+        height: 12em;
+        font-size: 14px;
+        margin: 0 auto;
+    }
+
+    .wheel-and-hamster.fast {
+        --dur: 0.35s;
+    }
+
+    .wheel,
+    .hamster,
+    .hamster div,
+    .spoke {
+        position: absolute;
+    }
+
+    .wheel,
+    .spoke {
+        border-radius: 50%;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .wheel {
+        background: radial-gradient(100% 100% at center, hsla(0, 0%, 60%, 0) 47.8%, hsl(0, 0%, 60%) 48%);
+        z-index: 2;
+    }
+
+    .hamster {
+        animation: hamster var(--dur) ease-in-out infinite;
+        top: 50%;
+        left: calc(50% - 3.5em);
+        width: 7em;
+        height: 3.75em;
+        transform: rotate(4deg) translate(-0.8em, 1.85em);
+        transform-origin: 50% 0;
+        z-index: 1;
+    }
+
+    .hamster__head {
+        animation: hamsterHead var(--dur) ease-in-out infinite;
+        background: hsl(30, 90%, 55%);
+        border-radius: 70% 30% 0 100% / 40% 25% 25% 60%;
+        box-shadow: 0 -0.25em 0 hsl(30, 90%, 80%) inset,
+            0.75em -1.55em 0 hsl(30, 90%, 90%) inset;
+        top: 0;
+        left: -2em;
+        width: 2.75em;
+        height: 2.5em;
+        transform-origin: 100% 50%;
+    }
+
+    .hamster__ear {
+        animation: hamsterEar var(--dur) ease-in-out infinite;
+        background: hsl(0, 90%, 85%);
+        border-radius: 50%;
+        box-shadow: -0.25em 0 hsl(30, 90%, 55%) inset;
+        top: -0.25em;
+        right: -0.25em;
+        width: 0.75em;
+        height: 0.75em;
+        transform-origin: 50% 75%;
+    }
+
+    .hamster__eye {
+        animation: hamsterEye var(--dur) linear infinite;
+        background: hsl(0, 0%, 0%);
+        border-radius: 50%;
+        top: 0.375em;
+        left: 1.25em;
+        width: 0.5em;
+        height: 0.5em;
+    }
+
+    .hamster__nose {
+        background: hsl(0, 90%, 75%);
+        border-radius: 35% 65% 85% 15% / 70% 50% 50% 30%;
+        top: 0.75em;
+        left: 0;
+        width: 0.2em;
+        height: 0.25em;
+    }
+
+    .hamster__body {
+        animation: hamsterBody var(--dur) ease-in-out infinite;
+        background: hsl(30, 90%, 90%);
+        border-radius: 50% 30% 50% 30% / 15% 60% 40% 40%;
+        box-shadow: 0.1em 0.75em 0 hsl(30, 90%, 55%) inset,
+            0.15em -0.5em 0 hsl(30, 90%, 80%) inset;
+        top: 0.25em;
+        left: 2em;
+        width: 4.5em;
+        height: 3em;
+        transform-origin: 17% 50%;
+        transform-style: preserve-3d;
+    }
+
+    .hamster__limb--fr,
+    .hamster__limb--fl {
+        clip-path: polygon(0 0, 100% 0, 70% 80%, 60% 100%, 0% 100%, 40% 80%);
+        top: 2em;
+        left: 0.5em;
+        width: 1em;
+        height: 1.5em;
+        transform-origin: 50% 0;
+    }
+
+    .hamster__limb--fr {
+        animation: hamsterFRLimb var(--dur) linear infinite;
+        background: linear-gradient(hsl(30, 90%, 80%) 80%, hsl(0, 90%, 75%) 80%);
+        transform: rotate(15deg) translateZ(-1px);
+    }
+
+    .hamster__limb--fl {
+        animation: hamsterFLLimb var(--dur) linear infinite;
+        background: linear-gradient(hsl(30, 90%, 90%) 80%, hsl(0, 90%, 85%) 80%);
+        transform: rotate(15deg);
+    }
+
+    .hamster__limb--br,
+    .hamster__limb--bl {
+        border-radius: 0.75em 0.75em 0 0;
+        clip-path: polygon(0 0, 100% 0, 100% 30%, 70% 90%, 70% 100%, 30% 100%, 40% 90%, 0% 30%);
+        top: 1em;
+        left: 2.8em;
+        width: 1.5em;
+        height: 2.5em;
+        transform-origin: 50% 30%;
+    }
+
+    .hamster__limb--br {
+        animation: hamsterBRLimb var(--dur) linear infinite;
+        background: linear-gradient(hsl(30, 90%, 80%) 90%, hsl(0, 90%, 75%) 90%);
+        transform: rotate(-25deg) translateZ(-1px);
+    }
+
+    .hamster__limb--bl {
+        animation: hamsterBLLimb var(--dur) linear infinite;
+        background: linear-gradient(hsl(30, 90%, 90%) 90%, hsl(0, 90%, 85%) 90%);
+        transform: rotate(-25deg);
+    }
+
+    .hamster__tail {
+        animation: hamsterTail var(--dur) linear infinite;
+        background: hsl(0, 90%, 85%);
+        border-radius: 0.25em 50% 50% 0.25em;
+        box-shadow: 0 -0.2em 0 hsl(0, 90%, 75%) inset;
+        top: 1.5em;
+        right: -0.5em;
+        width: 1em;
+        height: 0.5em;
+        transform: rotate(30deg) translateZ(-1px);
+        transform-origin: 0.25em 0.25em;
+    }
+
+    .spoke {
+        animation: spoke var(--dur) linear infinite;
+        background: radial-gradient(100% 100% at center, hsl(0, 0%, 60%) 4.8%, hsla(0, 0%, 60%, 0) 5%),
+            linear-gradient(hsla(0, 0%, 55%, 0) 46.9%, hsl(0, 0%, 65%) 47% 52.9%, hsla(0, 0%, 65%, 0) 53%) 50% 50% / 99% 99% no-repeat;
+    }
+
+    /* Hamster animations */
+    @keyframes hamster {
+        from, to { transform: rotate(4deg) translate(-0.8em, 1.85em); }
+        50% { transform: rotate(0) translate(-0.8em, 1.85em); }
+    }
+    @keyframes hamsterHead {
+        from, to { transform: rotate(0); }
+        33.3%, 66.7% { transform: rotate(-5deg); }
+    }
+    @keyframes hamsterEye {
+        from, 90%, to { transform: scaleY(1); }
+        95% { transform: scaleY(0); }
+    }
+    @keyframes hamsterEar {
+        from, to { transform: rotate(0); }
+        25%, 75% { transform: rotate(10deg); }
+        50% { transform: rotate(0); }
+    }
+    @keyframes hamsterBody {
+        from, to { transform: rotate(0); }
+        33.3%, 66.7% { transform: rotate(-2deg); }
+    }
+    @keyframes hamsterFRLimb {
+        from, to { transform: rotate(50deg) translateZ(-1px); }
+        25% { transform: rotate(-30deg) translateZ(-1px); }
+        50% { transform: rotate(50deg) translateZ(-1px); }
+        75% { transform: rotate(-30deg) translateZ(-1px); }
+    }
+    @keyframes hamsterFLLimb {
+        from, to { transform: rotate(-30deg); }
+        25% { transform: rotate(50deg); }
+        50% { transform: rotate(-30deg); }
+        75% { transform: rotate(50deg); }
+    }
+    @keyframes hamsterBRLimb {
+        from, to { transform: rotate(-60deg) translateZ(-1px); }
+        25% { transform: rotate(20deg) translateZ(-1px); }
+        50% { transform: rotate(-60deg) translateZ(-1px); }
+        75% { transform: rotate(20deg) translateZ(-1px); }
+    }
+    @keyframes hamsterBLLimb {
+        from, to { transform: rotate(20deg); }
+        25% { transform: rotate(-60deg); }
+        50% { transform: rotate(20deg); }
+        75% { transform: rotate(-60deg); }
+    }
+    @keyframes hamsterTail {
+        from, to { transform: rotate(30deg) translateZ(-1px); }
+        25%, 75% { transform: rotate(10deg) translateZ(-1px); }
+        50% { transform: rotate(30deg) translateZ(-1px); }
+    }
+    @keyframes spoke {
+        from { transform: rotate(0); }
+        to { transform: rotate(-1turn); }
+    }
+
+    /* Calibration splash */
+    .calibration-splash {
+        background: linear-gradient(135deg, #1e3a5f 0%, #2b6cb0 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 20px;
+        text-align: center;
+        margin: 2rem 0;
+        box-shadow: 0 10px 40px rgba(30, 58, 95, 0.4);
+        animation: pulse-border 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-border {
+        0%, 100% { box-shadow: 0 10px 40px rgba(30, 58, 95, 0.4); }
+        50% { box-shadow: 0 10px 60px rgba(43, 108, 176, 0.6), 0 0 20px rgba(66, 153, 225, 0.3); }
+    }
+
+    .calibration-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 3px;
+        animation: glow 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes glow {
+        from { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #4299e1; }
+        to { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #4299e1, 0 0 40px #4299e1; }
+    }
+
+    .calibration-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: bounce 1s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .calibration-text {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 1.5rem;
+    }
+
+    .focus-dot {
+        width: 20px;
+        height: 20px;
+        background: #4299e1;
+        border-radius: 50%;
+        margin: 1rem auto;
+        animation: pulse-dot 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.5); opacity: 0.7; }
+    }
+
+    /* Loading bar container */
+    .loading-container {
+        background: #f0f4f8;
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        margin: 1rem 0;
+    }
+
+    .loading-text {
+        font-size: 1.1rem;
+        color: #1e3a5f;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    .loading-percentage {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #2b6cb0;
+        margin: 0.5rem 0;
+    }
+
+    /* Reaction time display */
+    .reaction-time-box {
+        background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
+        border-left: 4px solid #2b6cb0;
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+
+    .reaction-time-label {
+        font-size: 0.85rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .reaction-time-value {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #1e3a5f;
     }
 
     /* Dashboard specific styles */
@@ -170,7 +507,6 @@ GRID_N = 10
 N_MATRICES = 15
 ROUNDS = N_MATRICES * 2
 VIEW_SECONDS = 5
-N_PEOPLE = 17
 ANCHOR_PCT = 0.15
 MIN_TRUE, MAX_TRUE = 25, 75
 DASHBOARD_PASSWORD = "26102025"
@@ -291,15 +627,13 @@ def load_from_gsheet() -> pd.DataFrame:
 T = {
     "fr": {
         "title": "🎯 Sprint Mémoire Couleurs",
-        "intro_header": "Comment ça marche",
-        "intro_text": (
-            "- Vous verrez brièvement une **grille 10×10** avec des **cases bleues**.\n"
-            f"- La grille reste affichée **{VIEW_SECONDS} secondes**.\n"
-            "- Ensuite, indiquez **combien** de cases bleues vous avez vues (0–100).\n"
-            "- Visez la **meilleure précision** possible."
-        ),
-        "start_button": "Commencer le jeu",
-        "average_msg": "En moyenne, **{n} personnes** ont répondu **{x:.2f}**. Quelle est votre estimation ?",
+        "calibration_title": "CALIBRATION",
+        "calibration_text": "Nous calibrons votre vitesse de réaction et votre attention visuelle.",
+        "calibration_focus": "Gardez les yeux fixés sur le centre de l'écran.",
+        "calibration_ready": "Prêt à commencer",
+        "start_button": "Commencer",
+        "loading_text": "Chargement de la grille...",
+        "reaction_time_label": "Temps de réaction moyen",
         "input_label": "Votre estimation (0–100) :",
         "validate": "Valider",
         "done": "🎉 Terminé !",
@@ -307,19 +641,18 @@ T = {
         "replay": "🔄 Rejouer",
         "participant_name_label": "Entrez votre nom ou pseudo :",
         "participant_name_placeholder": "Ex: Alice, Bob123, Équipe1...",
-        "participant_name_help": "Ce nom sera utilisé pour identifier vos résultats dans le classement."
+        "participant_name_help": "Ce nom sera utilisé pour identifier vos résultats dans le classement.",
+        "memorize": "Mémorisez la grille..."
     },
     "en": {
         "title": "🎯 Color Memory Sprint",
-        "intro_header": "How it works",
-        "intro_text": (
-            "- You will briefly see a **10×10 grid** with **blue squares**.\n"
-            f"- The grid will be displayed for **{VIEW_SECONDS} seconds**.\n"
-            "- Then, estimate **how many** blue squares you saw (0–100).\n"
-            "- Aim for the **best accuracy** possible."
-        ),
-        "start_button": "Start the game",
-        "average_msg": "On average, **{n} people** answered **{x:.2f}**. What is your estimate?",
+        "calibration_title": "CALIBRATION",
+        "calibration_text": "We're calibrating your reaction speed and visual attention.",
+        "calibration_focus": "Keep your eyes focused on the center of the screen.",
+        "calibration_ready": "Ready to begin",
+        "start_button": "Start",
+        "loading_text": "Loading grid...",
+        "reaction_time_label": "Average reaction time",
         "input_label": "Your estimate (0–100):",
         "validate": "Submit",
         "done": "🎉 Done!",
@@ -327,7 +660,8 @@ T = {
         "replay": "🔄 Play again",
         "participant_name_label": "Enter your name or nickname:",
         "participant_name_placeholder": "E.g.: Alice, Bob123, Team1...",
-        "participant_name_help": "This name will be used to identify your results in the leaderboard."
+        "participant_name_help": "This name will be used to identify your results in the leaderboard.",
+        "memorize": "Memorize the grid..."
     }
 }
 
@@ -818,11 +1152,7 @@ if st.session_state.access_step == "founder_pw":
     with col1:
         if st.button(access_texts["validate_btn"], use_container_width=True):
             if pw == DASHBOARD_PASSWORD:
-                st.session_state.founder_mode = True
-                st.session_state.phase = "get_name"
-                st.session_state.access_step = "done"
-                st.success(access_texts["correct_pw"])
-                time.sleep(1)
+                st.session_state.access_step = "founder_choice"
                 st.rerun()
             else:
                 st.error(access_texts["wrong_pw"])
@@ -834,15 +1164,70 @@ if st.session_state.access_step == "founder_pw":
 
     st.stop()
 
+# Founder choice: Dashboard or Test Game
+if st.session_state.access_step == "founder_choice":
+    if lang == "fr":
+        st.markdown("<h1 style='text-align: center;'>🔓 Accès Fondateur</h1>", unsafe_allow_html=True)
+        st.success("✅ Authentification réussie !")
+        dashboard_btn = "📊 Accéder au Dashboard"
+        test_btn = "🎮 Tester le jeu (sans enregistrer)"
+        dashboard_help = "Voir les résultats en temps réel"
+        test_help = "Jouer sans sauvegarder les données"
+    else:
+        st.markdown("<h1 style='text-align: center;'>🔓 Founder Access</h1>", unsafe_allow_html=True)
+        st.success("✅ Authentication successful!")
+        dashboard_btn = "📊 Access Dashboard"
+        test_btn = "🎮 Test the game (no data saved)"
+        dashboard_help = "View live results"
+        test_help = "Play without saving data"
+
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #e8f4f8 0%, #d1e8f0 100%); padding: 1.5rem; border-radius: 12px; text-align: center; margin-bottom: 1rem;">
+            <div style="font-size: 2.5rem;">📊</div>
+            <div style="font-weight: bold; color: #1e3a5f; margin: 0.5rem 0;">{dashboard_help}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button(dashboard_btn, use_container_width=True, key="goto_dashboard"):
+            st.session_state.dashboard_authenticated = True
+            st.query_params["page"] = "dashboard"
+            st.rerun()
+
+    with col2:
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #f0f8e8 0%, #e0f0d8 100%); padding: 1.5rem; border-radius: 12px; text-align: center; margin-bottom: 1rem;">
+            <div style="font-size: 2.5rem;">🎮</div>
+            <div style="font-weight: bold; color: #1e3a5f; margin: 0.5rem 0;">{test_help}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        if st.button(test_btn, use_container_width=True, key="test_game"):
+            st.session_state.founder_mode = True
+            st.session_state.phase = "get_name"
+            st.session_state.access_step = "done"
+            st.rerun()
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button(access_texts["back_btn"], use_container_width=True):
+        st.session_state.access_step = "choice"
+        st.rerun()
+
+    st.stop()
+
 # ------------------ GET PARTICIPANT NAME ------------------
 if st.session_state.get("phase") == "get_name":
     text = T[lang]
 
     st.markdown(f"<h1 style='text-align: center;'>{text['title']}</h1>", unsafe_allow_html=True)
 
-    st.markdown("""
-    <div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 2rem; border-radius: 16px; margin: 2rem 0;">
-    """, unsafe_allow_html=True)
+    # Show founder mode indicator if applicable
+    if st.session_state.get("founder_mode", False):
+        st.info("🧑‍💻 " + ("Mode fondateur — les données ne seront pas enregistrées" if lang == "fr" else "Founder mode — data will not be saved"))
+
+    st.markdown("<br>", unsafe_allow_html=True)
 
     participant_name = st.text_input(
         text["participant_name_label"],
@@ -850,8 +1235,6 @@ if st.session_state.get("phase") == "get_name":
         help=text["participant_name_help"],
         key="participant_name_input"
     )
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
@@ -863,7 +1246,7 @@ if st.session_state.get("phase") == "get_name":
             st.rerun()
 
     if not participant_name.strip():
-        st.info("👆 " + ("Entrez votre nom pour continuer" if lang == "fr" else "Enter your name to continue"))
+        st.warning("👆 " + ("Entrez votre nom pour continuer" if lang == "fr" else "Enter your name to continue"))
 
     st.stop()
 
@@ -879,26 +1262,50 @@ rounds = st.session_state.rounds
 
 st.markdown(f"<h1 style='text-align: center;'>{text['title']}</h1>", unsafe_allow_html=True)
 
-# INTRO
+# INTRO - Calibration Splash
 if st.session_state.get("phase") == "intro":
+    # Initialize calibration timer if not set
+    if "calibration_start" not in st.session_state:
+        st.session_state.calibration_start = time.time()
+
+    elapsed = time.time() - st.session_state.calibration_start
+    can_continue = elapsed >= 4  # 4 seconds minimum
+
+    # Flashy calibration splash
     st.markdown(f"""
-    <div style="background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); padding: 2rem; border-radius: 16px; margin: 1rem 0;">
-        <h3 style="margin-top: 0;">{text['intro_header']}</h3>
+    <div class="calibration-splash">
+        <div class="calibration-icon">⚡</div>
+        <div class="calibration-title">{text['calibration_title']}</div>
+        <div class="calibration-text">{text['calibration_text']}</div>
+        <div class="calibration-text" style="font-weight: 600;">{text['calibration_focus']}</div>
+        <div class="focus-dot"></div>
     </div>
     """, unsafe_allow_html=True)
 
-    st.markdown(text["intro_text"])
+    if can_continue:
+        st.markdown(f"""
+        <div style="text-align: center; margin-top: 1rem;">
+            <span style="color: #22c55e; font-weight: 600;">✓ {text['calibration_ready']}</span>
+        </div>
+        """, unsafe_allow_html=True)
 
-    participant = st.session_state.get("participant_name", "")
-    if participant:
-        welcome = f"Bonne chance, **{participant}** ! 🍀" if lang == "fr" else f"Good luck, **{participant}**! 🍀"
-        st.success(welcome)
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            if st.button(text["start_button"], use_container_width=True, key="start_after_calibration"):
+                del st.session_state.calibration_start
+                st.session_state.phase = "loading"
+                st.rerun()
+    else:
+        # Show countdown
+        remaining = int(4 - elapsed) + 1
+        st.markdown(f"""
+        <div style="text-align: center; margin-top: 1rem;">
+            <span style="color: #64748b; font-size: 1.2rem;">{remaining}...</span>
+        </div>
+        """, unsafe_allow_html=True)
+        time.sleep(0.5)
+        st.rerun()
 
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button(text["start_button"], use_container_width=True):
-            st.session_state.phase = "show"
-            st.rerun()
     st.stop()
 
 # END
@@ -1005,15 +1412,113 @@ if idx >= len(rounds):
     st.stop()
 
 # PROGRESSION
-st.progress(idx / len(rounds), text=f"{'Tour' if lang=='fr' else 'Round'} {idx+1}/{len(rounds)}")
+st.markdown(f"""
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+    <span style="font-weight: 600; color: #1e3a5f;">{'Tour' if lang=='fr' else 'Round'} {idx+1}/{len(rounds)}</span>
+    <span style="color: #64748b; font-size: 0.9rem;">{int((idx / len(rounds)) * 100)}%</span>
+</div>
+""", unsafe_allow_html=True)
+st.progress(idx / len(rounds))
 
 current: RoundItem = rounds[idx]
+
+# Calculate anchor percentage for loading bar (use integer)
+anchor_pct = int(round(current.anchor_value))
+
+# LOADING PHASE - Hamster animation with progress bar
+if st.session_state.phase == "loading":
+    # Initialize loading state
+    if "loading_step" not in st.session_state:
+        st.session_state.loading_step = 0
+        st.session_state.loading_start = time.time()
+
+    step = st.session_state.loading_step
+
+    # Hamster HTML
+    hamster_class = "wheel-and-hamster fast" if step == 2 else "wheel-and-hamster"
+    hamster_html = f"""
+    <div class="loading-container">
+        <div class="loading-text">{text['loading_text']}</div>
+        <div aria-label="Hamster running in wheel" role="img" class="{hamster_class}">
+            <div class="wheel"></div>
+            <div class="hamster">
+                <div class="hamster__body">
+                    <div class="hamster__head">
+                        <div class="hamster__ear"></div>
+                        <div class="hamster__eye"></div>
+                        <div class="hamster__nose"></div>
+                    </div>
+                    <div class="hamster__limb hamster__limb--fr"></div>
+                    <div class="hamster__limb hamster__limb--fl"></div>
+                    <div class="hamster__limb hamster__limb--br"></div>
+                    <div class="hamster__limb hamster__limb--bl"></div>
+                    <div class="hamster__tail"></div>
+                </div>
+            </div>
+            <div class="spoke"></div>
+        </div>
+    """
+
+    # Progress bar animation in steps
+    if step == 0:
+        # Step 0: Quick rise to anchor% (0.8 seconds)
+        elapsed = time.time() - st.session_state.loading_start
+        progress = min(anchor_pct, int((elapsed / 0.8) * anchor_pct))
+        st.markdown(hamster_html + f"""
+            <div class="loading-percentage">{progress}%</div>
+        </div>
+        """, unsafe_allow_html=True)
+        st.progress(progress / 100)
+
+        if elapsed >= 0.8:
+            st.session_state.loading_step = 1
+            st.session_state.loading_pause_start = time.time()
+        time.sleep(0.05)
+        st.rerun()
+
+    elif step == 1:
+        # Step 1: Pause at anchor% (0.8 seconds) - hamster keeps running
+        st.markdown(hamster_html + f"""
+            <div class="loading-percentage" style="color: #2b6cb0; font-weight: 800;">{anchor_pct}%</div>
+        </div>
+        """, unsafe_allow_html=True)
+        st.progress(anchor_pct / 100)
+
+        elapsed = time.time() - st.session_state.loading_pause_start
+        if elapsed >= 0.8:
+            st.session_state.loading_step = 2
+            st.session_state.loading_final_start = time.time()
+        time.sleep(0.1)
+        st.rerun()
+
+    elif step == 2:
+        # Step 2: Fast jump to 100% (0.3 seconds) - hamster runs faster
+        elapsed = time.time() - st.session_state.loading_final_start
+        progress = min(100, anchor_pct + int((elapsed / 0.3) * (100 - anchor_pct)))
+        st.markdown(hamster_html + f"""
+            <div class="loading-percentage">{progress}%</div>
+        </div>
+        """, unsafe_allow_html=True)
+        st.progress(progress / 100)
+
+        if elapsed >= 0.3:
+            # Clean up and move to show grid
+            del st.session_state.loading_step
+            del st.session_state.loading_start
+            del st.session_state.loading_pause_start
+            del st.session_state.loading_final_start
+            st.session_state.phase = "show"
+            st.rerun()
+        time.sleep(0.05)
+        st.rerun()
+
+    st.stop()
 
 # SHOW GRID
 if st.session_state.phase == "show":
     st.markdown(f"""
     <div style="text-align: center; padding: 1rem; background: #f8fafc; border-radius: 12px; margin-bottom: 1rem;">
-        <span style="font-size: 1.2rem; color: #2b6cb0;">{'Mémorisez la grille...' if lang=='fr' else 'Memorize the grid...'}</span>
+        <span style="font-size: 1.2rem; color: #2b6cb0;">{text['memorize']}</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1025,9 +1530,23 @@ if st.session_state.phase == "show":
     st.session_state.phase = "estimate"
     st.rerun()
 
-# INPUT
+# INPUT - Show fake reaction time as anchor
 elif st.session_state.phase == "estimate":
-    st.info(text["average_msg"].format(n=N_PEOPLE, x=current.anchor_value))
+    # Calculate fake reaction time: anchor as seconds + small random noise
+    # Store noise in session state so it doesn't change on rerender
+    noise_key = f"noise_{idx}"
+    if noise_key not in st.session_state:
+        st.session_state[noise_key] = random.uniform(-0.1, 0.1)
+
+    base_reaction = anchor_pct / 10  # Convert to seconds (e.g., 68 -> 6.8s)
+    fake_reaction_time = base_reaction + st.session_state[noise_key]
+
+    st.markdown(f"""
+    <div class="reaction-time-box">
+        <div class="reaction-time-label">{text['reaction_time_label']}</div>
+        <div class="reaction-time-value">{fake_reaction_time:.1f}s</div>
+    </div>
+    """, unsafe_allow_html=True)
 
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
@@ -1036,5 +1555,5 @@ elif st.session_state.phase == "estimate":
         if st.button(text["validate"], use_container_width=True):
             current.estimate = int(est)
             st.session_state.round_idx += 1
-            st.session_state.phase = "show"
+            st.session_state.phase = "loading"  # Go to loading for next round
             st.rerun()
