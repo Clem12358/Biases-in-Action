@@ -119,18 +119,36 @@ st.markdown("""
     }
 
     /* Button styling */
-    .stButton > button {
-        background: linear-gradient(135deg, #2b6cb0 0%, #1e4e8c 100%);
+    .stButton > button,
+    .stButton > button > div,
+    .stButton > button > div > p,
+    .stButton > button span,
+    .stButton > button p,
+    .stFormSubmitButton > button,
+    .stFormSubmitButton > button > div,
+    .stFormSubmitButton > button > div > p,
+    .stFormSubmitButton > button span,
+    .stFormSubmitButton > button p,
+    button[kind="primary"],
+    button[kind="secondary"],
+    [data-testid="baseButton-secondary"],
+    [data-testid="baseButton-secondary"] > div,
+    [data-testid="baseButton-secondary"] p,
+    [data-testid="baseButton-primary"],
+    [data-testid="baseButton-primary"] > div,
+    [data-testid="baseButton-primary"] p {
+        background: linear-gradient(135deg, #2b6cb0 0%, #1e4e8c 100%) !important;
         color: white !important;
-        border: none;
+        border: none !important;
         border-radius: 8px;
         padding: 0.6rem 1.5rem;
-        font-weight: 600;
+        font-weight: 600 !important;
         transition: all 0.3s ease;
         box-shadow: 0 2px 6px rgba(43, 108, 176, 0.3);
     }
 
-    .stButton > button:hover {
+    .stButton > button:hover,
+    .stFormSubmitButton > button:hover {
         transform: translateY(-2px);
         box-shadow: 0 4px 12px rgba(43, 108, 176, 0.4);
     }
