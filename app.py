@@ -412,13 +412,25 @@ st.markdown("""
     /* Calibration splash */
     .calibration-splash {
         background: linear-gradient(135deg, #1e3a5f 0%, #2b6cb0 100%);
-        color: white;
+        color: white !important;
         padding: 3rem 2rem;
         border-radius: 20px;
         text-align: center;
         margin: 2rem 0;
         box-shadow: 0 10px 40px rgba(30, 58, 95, 0.4);
         animation: pulse-border 2s ease-in-out infinite;
+    }
+
+    .calibration-splash *,
+    .calibration-splash div,
+    .calibration-splash span,
+    .calibration-splash p,
+    .calibration-splash h1,
+    .calibration-splash h2,
+    .calibration-title,
+    .calibration-text,
+    .calibration-icon {
+        color: white !important;
     }
 
     @keyframes pulse-border {
@@ -519,12 +531,21 @@ st.markdown("""
     /* Dashboard specific styles */
     .dashboard-header {
         background: linear-gradient(135deg, #1e3a5f 0%, #2b6cb0 100%);
-        color: white;
+        color: white !important;
         padding: 2rem;
         border-radius: 16px;
         text-align: center;
         margin-bottom: 2rem;
         box-shadow: 0 4px 20px rgba(30, 58, 95, 0.3);
+    }
+
+    .dashboard-header *,
+    .dashboard-header h1,
+    .dashboard-header h2,
+    .dashboard-header p,
+    .dashboard-header span,
+    .dashboard-header div {
+        color: white !important;
     }
 
     .kpi-card {
