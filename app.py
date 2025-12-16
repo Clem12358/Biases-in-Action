@@ -827,7 +827,7 @@ def calculate_dashboard_kpis(df: pd.DataFrame) -> dict:
     # Signed pull: positive if estimate pulled toward anchor
     df["signed_pull"] = df["sens_ancre"] * df["error"]
 
-    # Calculate per-participant metrics
+    # Calculate per-session metrics
     participant_stats = []
     for session_id, group in sessions:
         if len(group) < 10:  # Skip incomplete sessions (16 rounds total)
@@ -835,6 +835,7 @@ def calculate_dashboard_kpis(df: pd.DataFrame) -> dict:
         mean_signed_pull = group["signed_pull"].mean()
         mae = group["error"].abs().mean()
         participant_name = group["participant_name"].iloc[0] if "participant_name" in group.columns else "Anonymous"
+        timestamp = group["timestamp"].iloc[0] if "timestamp" in group.columns else ""
 
         # Also calculate high vs low anchor comparison within participant
         high_anchor_error = group[group["sens_ancre"] == 1]["error"].mean() if len(group[group["sens_ancre"] == 1]) > 0 else 0
@@ -842,6 +843,7 @@ def calculate_dashboard_kpis(df: pd.DataFrame) -> dict:
 
         participant_stats.append({
             "session_id": session_id,
+            "timestamp": timestamp,
             "participant_name": participant_name if participant_name else "Anonymous",
             "mean_signed_pull": mean_signed_pull,
             "high_anchor_error": high_anchor_error,
@@ -855,7 +857,13 @@ def calculate_dashboard_kpis(df: pd.DataFrame) -> dict:
 
     stats_df = pd.DataFrame(participant_stats)
 
-    # Primary KPIs
+    # Deduplicate: keep only the most recent session for each participant name
+    # Sort by timestamp descending and keep first occurrence of each name
+    stats_df = stats_df.sort_values("timestamp", ascending=False)
+    stats_df = stats_df.drop_duplicates(subset=["participant_name"], keep="first")
+    stats_df = stats_df.sort_values("participant_name")  # Sort alphabetically for display
+
+    # Primary KPIs (now based on unique participants)
     total_participants = len(stats_df)
     pct_showing_bias = (stats_df["mean_signed_pull"] > 0).mean() * 100
     avg_pull = stats_df["mean_signed_pull"].mean()
