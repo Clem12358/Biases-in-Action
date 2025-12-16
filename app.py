@@ -1267,8 +1267,8 @@ def render_dashboard():
 
     st.divider()
 
-    # ==================== PER TRUE-COUNT ANALYSIS ====================
-    st.markdown("### 🔥 Per True-Count Analysis")
+    # ==================== PER-MATRIX ANALYSIS ====================
+    st.markdown("### 🔥 Per-Matrix Analysis")
 
     truecount_stats = kpis["truecount_stats"]
 
@@ -1280,33 +1280,48 @@ def render_dashboard():
     if -1 in pivot_data.columns and 1 in pivot_data.columns:
         pivot_data.columns = ["Low Anchor Avg", "High Anchor Avg"]
         pivot_data["Effect"] = pivot_data["High Anchor Avg"] - pivot_data["Low Anchor Avg"]
+    elif -1 in pivot_data.columns:
+        pivot_data = pivot_data.rename(columns={-1: "Low Anchor Avg"})
+        pivot_data["High Anchor Avg"] = np.nan
+        pivot_data["Effect"] = 0
+    elif 1 in pivot_data.columns:
+        pivot_data = pivot_data.rename(columns={1: "High Anchor Avg"})
+        pivot_data["Low Anchor Avg"] = np.nan
+        pivot_data["Effect"] = 0
     else:
-        pivot_data.columns = ["Avg Estimate"]
+        pivot_data["Low Anchor Avg"] = np.nan
+        pivot_data["High Anchor Avg"] = np.nan
         pivot_data["Effect"] = 0
 
     pivot_data = pivot_data.sort_index()
 
     # Create visualization
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(12, 6))
 
-    x = range(len(pivot_data))
+    x = np.arange(len(pivot_data))
     width = 0.25
 
-    if "Low Anchor Avg" in pivot_data.columns:
-        ax.bar([i - width for i in x], pivot_data["Low Anchor Avg"], width, label="Low Anchor Est.", color='#e74c3c', alpha=0.8)
-        ax.bar([i + width for i in x], pivot_data["High Anchor Avg"], width, label="High Anchor Est.", color='#2ecc71', alpha=0.8)
+    # Plot bars only if data exists
+    if "Low Anchor Avg" in pivot_data.columns and pivot_data["Low Anchor Avg"].notna().any():
+        low_vals = pivot_data["Low Anchor Avg"].fillna(0)
+        ax.bar(x - width, low_vals, width, label="Low Anchor Est.", color='#e74c3c', alpha=0.8)
 
-    # Plot true values as reference line
+    if "High Anchor Avg" in pivot_data.columns and pivot_data["High Anchor Avg"].notna().any():
+        high_vals = pivot_data["High Anchor Avg"].fillna(0)
+        ax.bar(x + width, high_vals, width, label="High Anchor Est.", color='#2ecc71', alpha=0.8)
+
+    # Plot true values as reference bars
     ax.bar(x, pivot_data.index, width, label="True Value", color='#3498db', alpha=0.8)
 
-    ax.set_xlabel("True Count (sorted)")
+    ax.set_xlabel("True Count")
     ax.set_ylabel("Count")
-    ax.set_title("Estimates vs True Value by Matrix Difficulty")
+    ax.set_title("Estimates vs True Value by Matrix\n(Comparing High vs Low Anchor Conditions)")
     ax.set_xticks(x)
-    ax.set_xticklabels(pivot_data.index)
-    ax.legend()
+    ax.set_xticklabels(pivot_data.index, rotation=45 if len(pivot_data) > 10 else 0)
+    ax.legend(loc='upper left')
     fig.patch.set_facecolor('#f8fafc')
     ax.set_facecolor('#f8fafc')
+    plt.tight_layout()
     st.pyplot(fig, clear_figure=True)
 
     # Show signed pull by true count
