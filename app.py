@@ -611,7 +611,8 @@ st.markdown("""
 # ------------------ CONSTANTS ------------------
 GRID_N = 10
 # Fixed true counts for each matrix (each shown once with random anchor direction)
-TRUE_COUNTS = [32, 33, 37, 62, 63, 67, 68, 72, 77]
+# Original: 36, 43, 46, 48, 57, 58, 59 (removed 54) + New: 32, 33, 37, 62, 63, 67, 68, 72, 77
+TRUE_COUNTS = [32, 33, 36, 37, 43, 46, 48, 57, 58, 59, 62, 63, 67, 68, 72, 77]
 N_MATRICES = len(TRUE_COUNTS)
 ROUNDS = N_MATRICES  # Each matrix shown once
 VIEW_SECONDS = 5
@@ -829,7 +830,7 @@ def calculate_dashboard_kpis(df: pd.DataFrame) -> dict:
     # Calculate per-participant metrics
     participant_stats = []
     for session_id, group in sessions:
-        if len(group) < 5:  # Skip incomplete sessions (now 9 rounds, so lower threshold)
+        if len(group) < 10:  # Skip incomplete sessions (16 rounds total)
             continue
         mean_signed_pull = group["signed_pull"].mean()
         mae = group["error"].abs().mean()
