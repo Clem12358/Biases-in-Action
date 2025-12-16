@@ -1069,6 +1069,128 @@ def render_dashboard():
 
     st.divider()
 
+    # ==================== LEARNING EFFECT OVER ROUNDS ====================
+    st.markdown("### 📈 Learning Effect Over Rounds")
+
+    raw_df = kpis["raw_df"]
+
+    # Calculate mean pull by round number
+    # First, compute signed_pull if not already present
+    if "signed_pull" not in raw_df.columns:
+        raw_df["error"] = raw_df["estimation"] - raw_df["vrai"]
+        raw_df["signed_pull"] = raw_df["sens_ancre"] * raw_df["error"]
+
+    learning_data = raw_df.groupby("index_tour")["signed_pull"].mean().reset_index()
+    learning_data.columns = ["Round", "Mean Pull"]
+
+    # Perform linear regression to check for trend
+    if len(learning_data) > 1:
+        from scipy.stats import linregress
+        slope, intercept, r_value, p_value_trend, std_err = linregress(
+            learning_data["Round"], learning_data["Mean Pull"]
+        )
+        trend_significant = p_value_trend < 0.05
+    else:
+        slope, p_value_trend, trend_significant = 0, 1, False
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+
+    # Plot line with filled area
+    ax.fill_between(learning_data["Round"], 0, learning_data["Mean Pull"],
+                    alpha=0.3, color='#3498db')
+    ax.plot(learning_data["Round"], learning_data["Mean Pull"],
+            marker='o', color='#3498db', linewidth=2, markersize=6)
+
+    # Add horizontal line at y=0
+    ax.axhline(y=0, color='gray', linestyle='--', alpha=0.5)
+
+    # Add trend line if significant
+    if trend_significant:
+        trend_line = slope * learning_data["Round"] + intercept
+        ax.plot(learning_data["Round"], trend_line, color='red', linestyle='--',
+                linewidth=2, label=f'Trend (p={p_value_trend:.3f})')
+        ax.legend()
+
+    ax.set_xlabel("Round Number")
+    ax.set_ylabel("Mean Pull Toward Anchor")
+    trend_text = "Significant trend detected" if trend_significant else "No significant trend"
+    ax.set_title(f"Learning Effect Over Rounds\n({trend_text})")
+    ax.set_xticks(learning_data["Round"])
+    fig.patch.set_facecolor('#f8fafc')
+    ax.set_facecolor('#f8fafc')
+    st.pyplot(fig, clear_figure=True)
+
+    st.divider()
+
+    # ==================== DIGIT PREFERENCE ====================
+    st.markdown("### 🔢 Digit Preference Analysis")
+
+    # Get last digit of each estimate
+    raw_df["last_digit"] = raw_df["estimation"] % 10
+    digit_counts = raw_df["last_digit"].value_counts().sort_index()
+
+    # Ensure all digits 0-9 are represented
+    all_digits = pd.Series(index=range(10), data=0)
+    for digit in digit_counts.index:
+        all_digits[digit] = digit_counts[digit]
+
+    expected_count = len(raw_df) / 10  # Expected if uniform distribution
+
+    fig, ax = plt.subplots(figsize=(10, 5))
+
+    bars = ax.bar(all_digits.index, all_digits.values, color='#f39c12', alpha=0.8, edgecolor='#e67e22')
+
+    # Add expected uniform line
+    ax.axhline(y=expected_count, color='red', linestyle='--', linewidth=2, label='Expected (uniform)')
+
+    ax.set_xlabel("Last Digit of Estimate")
+    ax.set_ylabel("Frequency")
+
+    # Calculate percentage of 0 and 5
+    pct_0 = (all_digits[0] / len(raw_df) * 100) if len(raw_df) > 0 else 0
+    pct_5 = (all_digits[5] / len(raw_df) * 100) if len(raw_df) > 0 else 0
+    pct_0_and_5 = pct_0 + pct_5
+
+    ax.set_title(f"Digit Preference\n(0 and 5 account for {pct_0_and_5:.1f}% of estimates, expected 20%)")
+    ax.set_xticks(range(10))
+    ax.legend()
+    fig.patch.set_facecolor('#f8fafc')
+    ax.set_facecolor('#f8fafc')
+    st.pyplot(fig, clear_figure=True)
+
+    st.divider()
+
+    # ==================== INDIVIDUAL BIAS PROFILES ====================
+    st.markdown("### 👤 Individual Bias Profiles")
+
+    participant_stats = kpis["participant_stats"].copy()
+    participant_stats = participant_stats.sort_values("mean_signed_pull", ascending=True)
+
+    fig, ax = plt.subplots(figsize=(10, max(6, len(participant_stats) * 0.4)))
+
+    # Color bars based on direction of bias
+    colors = ['#e74c3c' if x < 0 else '#2ecc71' for x in participant_stats["mean_signed_pull"]]
+
+    y_pos = range(len(participant_stats))
+    ax.barh(y_pos, participant_stats["mean_signed_pull"], color=colors, alpha=0.8)
+
+    # Add threshold lines at ±2
+    ax.axvline(x=2, color='orange', linestyle='--', linewidth=2, alpha=0.7)
+    ax.axvline(x=-2, color='orange', linestyle='--', linewidth=2, alpha=0.7)
+    ax.axvline(x=0, color='black', linewidth=1)
+
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(participant_stats["participant_name"])
+    ax.set_xlabel("Mean Pull Toward Anchor")
+    ax.set_title("Individual Bias Profiles\n(Orange lines = ±2 threshold)")
+
+    fig.patch.set_facecolor('#f8fafc')
+    ax.set_facecolor('#f8fafc')
+    plt.tight_layout()
+    st.pyplot(fig, clear_figure=True)
+
+    st.divider()
+
     # ==================== BIAS CATEGORY DISTRIBUTION ====================
     st.markdown("### 🎨 Bias Categories")
 
