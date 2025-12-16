@@ -23,12 +23,12 @@ The anchoring is designed to work even on participants who know about cognitive 
 - **The Pretext**: "Calibration" makes the loading percentage seem like technical data, not a hint
 - **The Anchor**: The percentage shown during loading (e.g., 68%) becomes a fake "reaction time" (6.8s)
 - **The Exposure**: Participants see this number prominently above the grid and again when answering
-- **The Trick**: Each grid is shown **twice** with the same true count, but with different anchors:
-  - Once with a **low anchor** (-15% of true value)
-  - Once with a **high anchor** (+15% of true value)
-- **16 Rounds**: 8 unique grids × 2 anchor conditions
+- **The Trick**: Each grid has a randomly assigned anchor:
+  - Either a **low anchor** (-15% of true value)
+  - Or a **high anchor** (+15% of true value)
+- **16 Rounds**: 16 unique grids with fixed true counts, each shown once
 
-The difference in estimates between high and low anchor conditions reveals the anchoring effect - even when participants think they're just seeing "calibration data"!
+The difference in estimation errors between high and low anchor conditions reveals the anchoring effect - even when participants think they're just seeing "calibration data"!
 
 ## Features
 
@@ -136,11 +136,18 @@ Each participant generates 16 rows of data with the following columns:
 | `timestamp` | String | Session completion time (DD/MM/YYYY HH:MM:SS) |
 | `participant_name` | String | Name/nickname entered by participant |
 | `index_tour` | Integer | Round number (1-16) |
-| `id_verite` | Integer | Matrix ID (1-8) |
-| `vrai` | Integer | True count of blue squares |
+| `id_verite` | Integer | Matrix ID (1-16) |
+| `vrai` | Integer | True count of blue squares (from fixed set) |
 | `sens_ancre` | Integer | Anchor direction: -1 (low) or +1 (high) |
 | `valeur_ancre` | Float | Anchor value shown (±15% of true) |
 | `estimation` | Integer | Participant's estimate (0-100) |
+
+### Fixed True Counts
+
+The game uses a fixed set of 16 true counts for consistency across participants:
+`[32, 33, 36, 37, 43, 46, 48, 57, 58, 59, 62, 63, 67, 68, 72, 77]`
+
+Each true count is shown once per session with a **randomly assigned anchor direction** (roughly 50% high, 50% low). This randomization ensures that across many participants, each true count will have data from both anchor conditions for statistical comparison.
 
 ## KPIs Explained
 
@@ -148,13 +155,15 @@ Each participant generates 16 rows of data with the following columns:
 
 - **% Showing Bias**: Participants whose `mean_signed_pull > 0`
 - **Average Pull**: Mean of `(estimate - true) × anchor_direction` across all participants
-- **Anchor Effect Size**: `mean(high_anchor_estimates) - mean(low_anchor_estimates)`
+- **Anchor Effect Size**: Difference in estimation errors between high and low anchor conditions
+  - `mean(high_anchor_errors) - mean(low_anchor_errors)`
+  - Where `error = estimate - true_count`
 
 ### Statistical Metrics
 
-- **p-value**: Independent t-test comparing high vs low anchor estimates
-- **Cohen's d**: Standardized effect size (0.2=small, 0.5=medium, 0.8=large)
-- **95% CI**: Confidence interval for the anchor effect
+- **p-value**: Independent t-test comparing estimation errors between high vs low anchor conditions
+- **Cohen's d**: Standardized effect size on errors (0.2=small, 0.5=medium, 0.8=large)
+- **95% CI**: Confidence interval for the anchor effect on estimation error
 
 ### Bias Categories
 
@@ -181,11 +190,11 @@ Key constants in `app.py`:
 
 ```python
 GRID_N = 10              # Grid size (10×10)
-N_MATRICES = 8           # Number of unique grids
-ROUNDS = 16              # Total rounds (8 × 2)
+TRUE_COUNTS = [32, 33, 36, 37, 43, 46, 48, 57, 58, 59, 62, 63, 67, 68, 72, 77]
+N_MATRICES = 16          # Number of unique grids
+ROUNDS = 16              # Total rounds (one per matrix)
 VIEW_SECONDS = 5         # Grid display time
 ANCHOR_PCT = 0.15        # ±15% anchor variance
-MIN_TRUE, MAX_TRUE = 25, 75  # Blue squares range
 DASHBOARD_PASSWORD = "26102025"
 ```
 
