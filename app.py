@@ -610,11 +610,12 @@ st.markdown("""
 
 # ------------------ CONSTANTS ------------------
 GRID_N = 10
-N_MATRICES = 8
-ROUNDS = N_MATRICES * 2  # 16 rounds total
+# Fixed true counts for each matrix (each shown once with random anchor direction)
+TRUE_COUNTS = [32, 33, 37, 62, 63, 67, 68, 72, 77]
+N_MATRICES = len(TRUE_COUNTS)
+ROUNDS = N_MATRICES  # Each matrix shown once
 VIEW_SECONDS = 5
 ANCHOR_PCT = 0.15
-MIN_TRUE, MAX_TRUE = 25, 75
 DASHBOARD_PASSWORD = "26102025"
 
 # ------------------ DATA MODEL ------------------
@@ -635,28 +636,35 @@ def make_grid(true_count: int) -> np.ndarray:
     grid[idx] = True
     return grid.reshape((GRID_N, GRID_N))
 
-def generate_true_counts(seed: int | None = None) -> list[int]:
-    rng = np.random.default_rng(seed)
-    counts = rng.integers(MIN_TRUE, MAX_TRUE + 1, size=N_MATRICES)
-    return [int(c) for c in counts]
-
 def make_rounds(seed: int | None = None) -> list[RoundItem]:
+    """Create rounds with fixed true counts, each shown once with random anchor direction."""
     rng = random.Random(seed)
     rounds: list[RoundItem] = []
-    for i, tc in enumerate(generate_true_counts()):
-        grid_a = make_grid(tc)
-        grid_b = make_grid(tc)
-        while np.array_equal(grid_a, grid_b):
-            grid_b = make_grid(tc)
-        low = round(tc * (1 - ANCHOR_PCT), 2)
-        high = round(tc * (1 + ANCHOR_PCT), 2)
-        pair = [
-            RoundItem(matrix_id=i+1, grid=grid_a, true_count=tc, anchor_dir=-1, anchor_value=low),
-            RoundItem(matrix_id=i+1, grid=grid_b, true_count=tc, anchor_dir=+1, anchor_value=high),
-        ]
-        rng.shuffle(pair)
-        rounds.extend(pair)
-    rng.shuffle(rounds)
+
+    # Shuffle true counts order
+    shuffled_counts = TRUE_COUNTS.copy()
+    rng.shuffle(shuffled_counts)
+
+    # Randomly assign anchor directions (roughly balanced)
+    n_high = len(shuffled_counts) // 2
+    anchor_dirs = [+1] * n_high + [-1] * (len(shuffled_counts) - n_high)
+    rng.shuffle(anchor_dirs)
+
+    for i, (tc, anchor_dir) in enumerate(zip(shuffled_counts, anchor_dirs)):
+        grid = make_grid(tc)
+        if anchor_dir == +1:
+            anchor_value = round(tc * (1 + ANCHOR_PCT), 2)
+        else:
+            anchor_value = round(tc * (1 - ANCHOR_PCT), 2)
+
+        rounds.append(RoundItem(
+            matrix_id=i + 1,
+            grid=grid,
+            true_count=tc,
+            anchor_dir=anchor_dir,
+            anchor_value=anchor_value
+        ))
+
     return rounds
 
 def show_grid(grid: np.ndarray):
@@ -799,7 +807,13 @@ T = {
 
 # ------------------ DASHBOARD KPI CALCULATIONS ------------------
 def calculate_dashboard_kpis(df: pd.DataFrame) -> dict:
-    """Calculate all KPIs for the dashboard."""
+    """Calculate all KPIs for the dashboard.
+
+    New design: Each matrix shown once with either high or low anchor.
+    We measure anchoring by comparing estimation errors across anchor conditions.
+    Signed pull = anchor_dir * (estimate - true_count)
+    Positive pull means estimates are pulled toward the anchor.
+    """
     if df.empty:
         return None
 
@@ -807,18 +821,30 @@ def calculate_dashboard_kpis(df: pd.DataFrame) -> dict:
     df["session_id"] = df["timestamp"] + "_" + df.get("participant_name", pd.Series([""] * len(df))).fillna("")
     sessions = df.groupby("session_id")
 
+    # Calculate estimation error for each observation
+    df["error"] = df["estimation"] - df["vrai"]
+    # Signed pull: positive if estimate pulled toward anchor
+    df["signed_pull"] = df["sens_ancre"] * df["error"]
+
     # Calculate per-participant metrics
     participant_stats = []
     for session_id, group in sessions:
-        if len(group) < 10:  # Skip incomplete sessions
+        if len(group) < 5:  # Skip incomplete sessions (now 9 rounds, so lower threshold)
             continue
-        signed_pull = (group["sens_ancre"] * (group["estimation"] - group["vrai"])).mean()
-        mae = (group["estimation"] - group["vrai"]).abs().mean()
+        mean_signed_pull = group["signed_pull"].mean()
+        mae = group["error"].abs().mean()
         participant_name = group["participant_name"].iloc[0] if "participant_name" in group.columns else "Anonymous"
+
+        # Also calculate high vs low anchor comparison within participant
+        high_anchor_error = group[group["sens_ancre"] == 1]["error"].mean() if len(group[group["sens_ancre"] == 1]) > 0 else 0
+        low_anchor_error = group[group["sens_ancre"] == -1]["error"].mean() if len(group[group["sens_ancre"] == -1]) > 0 else 0
+
         participant_stats.append({
             "session_id": session_id,
             "participant_name": participant_name if participant_name else "Anonymous",
-            "mean_signed_pull": signed_pull,
+            "mean_signed_pull": mean_signed_pull,
+            "high_anchor_error": high_anchor_error,
+            "low_anchor_error": low_anchor_error,
             "mae": mae,
             "n_rounds": len(group)
         })
@@ -833,25 +859,27 @@ def calculate_dashboard_kpis(df: pd.DataFrame) -> dict:
     pct_showing_bias = (stats_df["mean_signed_pull"] > 0).mean() * 100
     avg_pull = stats_df["mean_signed_pull"].mean()
 
-    # Calculate anchor effect size (difference between high and low anchor estimates)
-    high_anchor = df[df["sens_ancre"] == 1]["estimation"].mean()
-    low_anchor = df[df["sens_ancre"] == -1]["estimation"].mean()
-    anchor_effect_size = high_anchor - low_anchor
+    # Calculate anchor effect on estimation error
+    # High anchor should produce positive errors (overestimation)
+    # Low anchor should produce negative errors (underestimation)
+    high_anchor_errors = df[df["sens_ancre"] == 1]["error"]
+    low_anchor_errors = df[df["sens_ancre"] == -1]["error"]
 
-    # Statistical tests
-    high_estimates = df[df["sens_ancre"] == 1]["estimation"]
-    low_estimates = df[df["sens_ancre"] == -1]["estimation"]
+    # Effect size: difference in errors between high and low anchor conditions
+    anchor_effect_size = high_anchor_errors.mean() - low_anchor_errors.mean() if len(high_anchor_errors) > 0 and len(low_anchor_errors) > 0 else 0
 
-    if len(high_estimates) > 1 and len(low_estimates) > 1:
-        t_stat, p_value = stats.ttest_ind(high_estimates, low_estimates)
-        # Cohen's d
-        pooled_std = np.sqrt(((len(high_estimates)-1)*high_estimates.std()**2 +
-                              (len(low_estimates)-1)*low_estimates.std()**2) /
-                             (len(high_estimates) + len(low_estimates) - 2))
-        cohens_d = (high_estimates.mean() - low_estimates.mean()) / pooled_std if pooled_std > 0 else 0
+    # Statistical tests on errors (not raw estimates)
+    if len(high_anchor_errors) > 1 and len(low_anchor_errors) > 1:
+        t_stat, p_value = stats.ttest_ind(high_anchor_errors, low_anchor_errors)
+
+        # Cohen's d on errors
+        pooled_std = np.sqrt(((len(high_anchor_errors)-1)*high_anchor_errors.std()**2 +
+                              (len(low_anchor_errors)-1)*low_anchor_errors.std()**2) /
+                             (len(high_anchor_errors) + len(low_anchor_errors) - 2))
+        cohens_d = anchor_effect_size / pooled_std if pooled_std > 0 else 0
 
         # 95% CI for the difference
-        se = np.sqrt(high_estimates.var()/len(high_estimates) + low_estimates.var()/len(low_estimates))
+        se = np.sqrt(high_anchor_errors.var()/len(high_anchor_errors) + low_anchor_errors.var()/len(low_anchor_errors))
         ci_low = anchor_effect_size - 1.96 * se
         ci_high = anchor_effect_size + 1.96 * se
     else:
@@ -859,7 +887,7 @@ def calculate_dashboard_kpis(df: pd.DataFrame) -> dict:
         cohens_d = 0
         ci_low, ci_high = 0, 0
 
-    # Bias category distribution
+    # Bias category distribution (based on signed pull)
     minimal_bias = (stats_df["mean_signed_pull"].abs() < 2).sum()
     moderate_bias = ((stats_df["mean_signed_pull"].abs() >= 2) & (stats_df["mean_signed_pull"].abs() < 5)).sum()
     strong_bias = (stats_df["mean_signed_pull"].abs() >= 5).sum()
@@ -869,10 +897,11 @@ def calculate_dashboard_kpis(df: pd.DataFrame) -> dict:
     best_participant = stats_df.loc[stats_df["abs_pull"].idxmin()]
     most_biased = stats_df.loc[stats_df["abs_pull"].idxmax()]
 
-    # Per-matrix analysis
-    matrix_stats = df.groupby(["id_verite", "sens_ancre"]).agg({
+    # Per true-count analysis (grouped by true count since each is unique per session)
+    truecount_stats = df.groupby(["vrai", "sens_ancre"]).agg({
         "estimation": "mean",
-        "vrai": "first"
+        "error": "mean",
+        "signed_pull": "mean"
     }).reset_index()
 
     return {
@@ -890,7 +919,7 @@ def calculate_dashboard_kpis(df: pd.DataFrame) -> dict:
         "best_participant": best_participant,
         "most_biased": most_biased,
         "participant_stats": stats_df,
-        "matrix_stats": matrix_stats,
+        "truecount_stats": truecount_stats,
         "raw_df": df
     }
 
@@ -1115,38 +1144,54 @@ def render_dashboard():
 
     st.divider()
 
-    # ==================== PER-MATRIX HEATMAP ====================
-    st.markdown("### 🔥 Per-Matrix Analysis")
+    # ==================== PER TRUE-COUNT ANALYSIS ====================
+    st.markdown("### 🔥 Per True-Count Analysis")
 
-    matrix_stats = kpis["matrix_stats"]
+    truecount_stats = kpis["truecount_stats"]
 
-    # Pivot for heatmap
-    pivot_data = matrix_stats.pivot(index="id_verite", columns="sens_ancre", values="estimation")
-    pivot_data.columns = ["Low Anchor Avg", "High Anchor Avg"]
-    true_vals = matrix_stats.groupby("id_verite")["vrai"].first()
-    pivot_data["True Value"] = true_vals
-    pivot_data["Effect"] = pivot_data["High Anchor Avg"] - pivot_data["Low Anchor Avg"]
-    pivot_data = pivot_data.sort_values("True Value")
+    # Group by true count to show effect across different matrix difficulties
+    # Since each true count may have been shown with either anchor type across participants
+    pivot_data = truecount_stats.pivot(index="vrai", columns="sens_ancre", values="estimation")
 
-    # Create heatmap
+    # Handle case where not all true counts have both anchor types
+    if -1 in pivot_data.columns and 1 in pivot_data.columns:
+        pivot_data.columns = ["Low Anchor Avg", "High Anchor Avg"]
+        pivot_data["Effect"] = pivot_data["High Anchor Avg"] - pivot_data["Low Anchor Avg"]
+    else:
+        pivot_data.columns = ["Avg Estimate"]
+        pivot_data["Effect"] = 0
+
+    pivot_data = pivot_data.sort_index()
+
+    # Create visualization
     fig, ax = plt.subplots(figsize=(10, 6))
 
     x = range(len(pivot_data))
     width = 0.25
 
-    ax.bar([i - width for i in x], pivot_data["Low Anchor Avg"], width, label="Low Anchor Est.", color='#e74c3c', alpha=0.8)
-    ax.bar(x, pivot_data["True Value"], width, label="True Value", color='#3498db', alpha=0.8)
-    ax.bar([i + width for i in x], pivot_data["High Anchor Avg"], width, label="High Anchor Est.", color='#2ecc71', alpha=0.8)
+    if "Low Anchor Avg" in pivot_data.columns:
+        ax.bar([i - width for i in x], pivot_data["Low Anchor Avg"], width, label="Low Anchor Est.", color='#e74c3c', alpha=0.8)
+        ax.bar([i + width for i in x], pivot_data["High Anchor Avg"], width, label="High Anchor Est.", color='#2ecc71', alpha=0.8)
 
-    ax.set_xlabel("Matrix ID (sorted by true value)")
+    # Plot true values as reference line
+    ax.bar(x, pivot_data.index, width, label="True Value", color='#3498db', alpha=0.8)
+
+    ax.set_xlabel("True Count (sorted)")
     ax.set_ylabel("Count")
-    ax.set_title("Estimates vs True Value by Matrix")
+    ax.set_title("Estimates vs True Value by Matrix Difficulty")
     ax.set_xticks(x)
     ax.set_xticklabels(pivot_data.index)
     ax.legend()
     fig.patch.set_facecolor('#f8fafc')
     ax.set_facecolor('#f8fafc')
     st.pyplot(fig, clear_figure=True)
+
+    # Show signed pull by true count
+    st.markdown("#### 📊 Anchoring Effect by True Count")
+    pull_by_count = truecount_stats.groupby("vrai")["signed_pull"].mean().reset_index()
+    pull_by_count.columns = ["True Count", "Avg Signed Pull"]
+    pull_by_count["Avg Signed Pull"] = pull_by_count["Avg Signed Pull"].apply(lambda x: f"{x:+.2f}")
+    st.dataframe(pull_by_count, use_container_width=True, hide_index=True)
 
     # ==================== NOBODY'S IMMUNE ====================
     st.divider()
@@ -1559,11 +1604,8 @@ if idx >= len(rounds):
             3. Ce nombre n'avait **aucun rapport** avec le vrai nombre de carrés bleus
 
             #### 🧩 Le piège en détail :
-            Chaque grille a été montrée **deux fois** avec le même nombre de carrés bleus, mais :
-            - Une fois avec une ancre **basse** (-15% de la vraie valeur)
-            - Une fois avec une ancre **haute** (+15% de la vraie valeur)
-
-            La différence entre vos estimations pour la même grille révèle à quel point l'ancre vous a influencé !
+            Chaque grille avait une ancre soit **haute** (+15%) soit **basse** (-15%) par rapport au vrai nombre de carrés.
+            Vos estimations ont-elles été tirées vers ces ancres ?
             """)
         else:
             st.markdown("### 🧠 What do your results mean?")
@@ -1589,11 +1631,8 @@ if idx >= len(rounds):
             3. That number had **nothing to do** with the actual number of blue squares
 
             #### 🧩 The trick in detail:
-            Every grid was shown **twice** with the same number of blue squares, but:
-            - Once with a **low anchor** (-15% of the true value)
-            - Once with a **high anchor** (+15% of the true value)
-
-            The difference between your estimates for the same grid reveals how much the anchor influenced you!
+            Each grid had either a **high anchor** (+15%) or **low anchor** (-15%) relative to the true count.
+            Were your estimates pulled toward those anchors?
             """)
 
     st.divider()
