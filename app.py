@@ -984,14 +984,14 @@ def render_dashboard():
         st.metric(
             label="📊 Showing Bias",
             value=f"{kpis['pct_showing_bias']:.1f}%",
-            help="Percentage of participants whose estimates were pulled toward the anchor"
+            help="Percentage of participants whose mean_signed_pull > 0"
         )
 
     with col3:
         st.metric(
             label="📐 Avg Pull Toward Anchor",
             value=f"{kpis['avg_pull']:+.2f}",
-            help="Average number of squares participants were pulled toward the anchor"
+            help="Pull = (Estimate - True_count) × Anchor_direction | Anchor_direction = +1 (high) or -1 (low) | Positive = shifted toward anchor; Negative = shifted away"
         )
 
     st.divider()
@@ -1005,12 +1005,12 @@ def render_dashboard():
         st.metric(
             label="🎯 Anchor Effect Size",
             value=f"{kpis['anchor_effect_size']:+.2f} squares",
-            help="Difference between high-anchor and low-anchor estimates"
+            help="Effect = Mean(errors | high anchor) - Mean(errors | low anchor) | where error = estimate - true_count | Using errors controls for different grid difficulties | Positive = anchoring worked; Negative = reverse anchoring"
         )
         st.metric(
             label="📉 Cohen's d",
             value=f"{kpis['cohens_d']:.3f}",
-            help="Standardized effect size (0.2=small, 0.5=medium, 0.8=large)"
+            help="d = (Mean_error_high - Mean_error_low) / Pooled_SD | where error = estimate - true_count | Pooled_SD = √[(SD²_high + SD²_low) / 2] | 0.2 = small, 0.5 = medium, 0.8 = large"
         )
 
     with col2:
@@ -1027,7 +1027,7 @@ def render_dashboard():
         st.metric(
             label="📊 95% Confidence Interval",
             value=f"[{kpis['ci_low']:.2f}, {kpis['ci_high']:.2f}]",
-            help="95% confidence interval for the anchor effect"
+            help="95% CI for the Anchor Effect Size | If interval excludes 0, the effect is statistically significant"
         )
 
     st.divider()
