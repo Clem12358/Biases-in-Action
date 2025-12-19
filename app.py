@@ -611,10 +611,9 @@ st.markdown("""
 # ------------------ CONSTANTS ------------------
 GRID_N = 10
 # Fixed true counts for each matrix (each shown once with random anchor direction)
-# Original: 36, 43, 46, 48, 57, 58, 59 (removed 54) + New: 32, 33, 37, 62, 63, 67, 68, 72, 77
-TRUE_COUNTS = [32, 33, 36, 37, 43, 46, 48, 57, 58, 59, 62, 63, 67, 68, 72, 77]
+TRUE_COUNTS = [32, 37, 43, 48, 53, 58, 63, 68, 73, 77]
 N_MATRICES = len(TRUE_COUNTS)
-ROUNDS = N_MATRICES  # Each matrix shown once
+ROUNDS = N_MATRICES  # Each matrix shown once (10 rounds)
 VIEW_SECONDS = 5
 ANCHOR_PCT = 0.15
 DASHBOARD_PASSWORD = "26102025"
