@@ -26,7 +26,7 @@ The anchoring is designed to work even on participants who know about cognitive 
 - **The Trick**: Each grid has a randomly assigned anchor:
   - Either a **low anchor** (-15% of true value)
   - Or a **high anchor** (+15% of true value)
-- **10 Rounds**: 10 unique grids with fixed true counts, each shown once
+- **8 Rounds**: 8 unique grids with fixed true counts, each shown once
 
 The difference in estimation errors between high and low anchor conditions reveals the anchoring effect - even when participants think they're just seeing "calibration data"!
 
@@ -114,7 +114,7 @@ streamlit run app.py
    - Choose "I am here to play!"
    - Enter their name/nickname
    - Go through "calibration" (they won't know it's the anchoring mechanism!)
-   - Complete 10 rounds
+   - Complete 8 rounds
 3. **Open the dashboard** (`?page=dashboard`) on the presenter's screen
 4. **Click Refresh** to see live results as participants complete the game
 5. **Reveal the trick**: After everyone completes, explain how the "calibration" and "reaction time" were actually anchors!
@@ -129,14 +129,14 @@ streamlit run app.py
 
 ## Data Structure
 
-Each participant generates 10 rows of data with the following columns:
+Each participant generates 8 rows of data with the following columns:
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `timestamp` | String | Session completion time (DD/MM/YYYY HH:MM:SS) |
 | `participant_name` | String | Name/nickname entered by participant |
-| `index_tour` | Integer | Round number (1-10) |
-| `id_verite` | Integer | Matrix ID (1-10) |
+| `index_tour` | Integer | Round number (1-8) |
+| `id_verite` | Integer | Matrix ID (1-8) |
 | `vrai` | Integer | True count of blue squares (from fixed set) |
 | `sens_ancre` | Integer | Anchor direction: -1 (low) or +1 (high) |
 | `valeur_ancre` | Float | Anchor value shown (±15% of true) |
@@ -144,8 +144,8 @@ Each participant generates 10 rows of data with the following columns:
 
 ### Fixed True Counts
 
-The game uses a fixed set of 10 true counts for consistency across participants:
-`[32, 37, 43, 48, 53, 58, 63, 68, 73, 77]`
+The game uses a fixed set of 8 true counts for consistency across participants:
+`[37, 43, 48, 53, 58, 63, 68, 73]`
 
 Each true count is shown once per session with a **randomly assigned anchor direction** (roughly 50% high, 50% low). This randomization ensures that across many participants, each true count will have data from both anchor conditions for statistical comparison.
 
@@ -190,9 +190,9 @@ Key constants in `app.py`:
 
 ```python
 GRID_N = 10              # Grid size (10×10)
-TRUE_COUNTS = [32, 37, 43, 48, 53, 58, 63, 68, 73, 77]
-N_MATRICES = 10          # Number of unique grids
-ROUNDS = 10              # Total rounds (one per matrix)
+TRUE_COUNTS = [37, 43, 48, 53, 58, 63, 68, 73]
+N_MATRICES = 8           # Number of unique grids
+ROUNDS = 8               # Total rounds (one per matrix)
 VIEW_SECONDS = 5         # Grid display time
 ANCHOR_PCT = 0.15        # ±15% anchor variance
 DASHBOARD_PASSWORD = "26102025"
