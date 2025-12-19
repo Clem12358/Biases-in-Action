@@ -8,6 +8,8 @@ Anchoring bias is a cognitive phenomenon where people rely too heavily on the fi
 
 ## How the Game Works
 
+LINK TO THE GAME: https://biases-in-action-mjxkdmy3kabz2v3rxykwqj.streamlit.app
+
 ### The Game Flow
 
 1. **Calibration Intro**: Participants see a flashy "CALIBRATION" screen explaining we're measuring their reaction time and visual attention
